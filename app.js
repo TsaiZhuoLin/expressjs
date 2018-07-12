@@ -6,6 +6,7 @@ const logger = require("morgan");
 
 const indexRouter = require("./routes/index");
 const usersRouter = require("./routes/users");
+const apiRouter = require("./routes/api");
 
 const http = require("http");
 const hostname = "";
@@ -22,11 +23,11 @@ const con = mysql.createConnection({
 });
 
 con.connect(function(err) {
-    if (err) {
-        console.log('connecting error');
-        return;
-    }
-    console.log('connecting success');
+  if (err) {
+    console.log("connecting error");
+    return;
+  }
+  console.log("connecting success");
 });
 
 // view engine setup
@@ -41,12 +42,13 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // db state
 app.use(function(req, res, next) {
-    req.con = con;
-    next();
+  req.con = con;
+  next();
 });
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
+app.use("/api", apiRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -67,7 +69,7 @@ app.use(function(err, req, res, next) {
 // Node server
 // Constants
 const PORT = 3000;
-const HOST = '0.0.0.0';
+const HOST = "0.0.0.0";
 app.listen(PORT, HOST);
 console.log(`Running on http://${HOST}:${PORT}`);
 //server.listen(port, hostname, () => {
