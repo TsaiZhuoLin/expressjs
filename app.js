@@ -1,17 +1,20 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const logger = require("morgan");
 
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users");
+const indexRouter = require("./routes/index");
+const usersRouter = require("./routes/users");
 
-var app = express();
+const http = require("http");
+const hostname = "";
+
+const app = express();
 
 // Database
-var mysql = require("mysql");
-var connection = mysql.createConnection({
+const mysql = require("mysql");
+const connection = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "12345",
@@ -54,6 +57,22 @@ app.use(function(err, req, res, next) {
   // render the error page
   res.status(err.status || 500);
   res.render("error");
+});
+
+// Node server
+const http = require("http");
+
+const hostname = "127.0.0.1";
+const port = 8080;
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader("Content-Type", "text/plain");
+  res.end("Hello World\n");
+});
+
+server.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
 });
 
 module.exports = app;
