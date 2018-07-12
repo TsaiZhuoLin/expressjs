@@ -14,21 +14,20 @@ const app = express();
 
 // Database
 const mysql = require("mysql");
-const connection = mysql.createConnection({
+const con = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "12345",
   database: "users"
 });
 
-connection.connect();
-
-connection.query("SELECT 1 + 1 AS solution", function(err, rows, fields) {
-  if (err) throw err;
-  console.log("The solution is: ", rows[0].solution);
+con.connect(function(err) {
+    if (err) {
+        console.log('connecting error');
+        return;
+    }
+    console.log('connecting success');
 });
-
-connection.end();
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -39,6 +38,12 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
+
+// db state
+app.use(function(req, res, next) {
+    req.con = con;
+    next();
+});
 
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
@@ -60,19 +65,13 @@ app.use(function(err, req, res, next) {
 });
 
 // Node server
-const http = require("http");
-
-const hostname = "127.0.0.1";
-const port = 8080;
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Hello World\n");
-});
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
+// Constants
+const PORT = 3000;
+const HOST = '0.0.0.0';
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
+//server.listen(port, hostname, () => {
+//  console.log(`Server running at http://${hostname}:${port}/`);
+//});
 
 module.exports = app;
