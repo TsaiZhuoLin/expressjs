@@ -33,26 +33,18 @@ router.post("/users", (req, res, next) => {
   var is_manager = jsonData.is_manager;
   console.log(11, jsonData);
 
-  let sql =
-    `INSERT INTO
-                          users 
+  let sql = `INSERT INTO
+    users 
               (first_name,
                 last_name,
                 email, 
                 is_user_manager)
             VALUES 
-              ('` +
-    first_name +
-    `',
-                '` +
-    last_name +
-    `', 
-                '` +
-    email +
-    `',
-                '` +
-    is_manager +
-    `');`;
+              ('${first_name}',
+               '${last_name}', 
+               '${email}',
+               '${is_manager}');`;
+
   let msg = "User posted";
 
   dbQuery(req, res, sql, msg);
