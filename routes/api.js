@@ -8,8 +8,8 @@ router.get("/", function(req, res, next) {
 
 /* GET users API listing. */
 router.get("/users", function(req, res, next) {
-  var db = req.con;
-  var data = "";
+  let db = req.con;
+  let data = "";
 
   db.query("SELECT * FROM users", function(err, rows) {
     if (err) {
@@ -19,14 +19,41 @@ router.get("/users", function(req, res, next) {
 
     // use index.ejs
     res.json(data);
+    console.log(rows);
   });
 });
 
 // POST users API listing
 router.post("/users", (req, res, next) => {
-  let sql = `INSERT INTO users (first_name, last_name, email, is_user_manager)
-    VALUES ('Max', 'Tsai', 'max@max.com', 1);`;
-  let msg = "User updated";
+  console.log(22, req.body);
+  var jsonData = req.body;
+  var first_name = jsonData.first_name;
+  var last_name = jsonData.last_name;
+  var email = jsonData.email;
+  var is_manager = jsonData.is_manager;
+  console.log(11, jsonData);
+
+  let sql =
+    `INSERT INTO
+                          users 
+              (first_name,
+                last_name,
+                email, 
+                is_user_manager)
+            VALUES 
+              ('` +
+    first_name +
+    `',
+                '` +
+    last_name +
+    `', 
+                '` +
+    email +
+    `',
+                '` +
+    is_manager +
+    `');`;
+  let msg = "User posted";
 
   dbQuery(req, res, sql, msg);
 });
@@ -35,8 +62,8 @@ router.post("/users", (req, res, next) => {
 router.patch("/users", (req, res, next) => {
   let sql = `
     UPDATE users
-    SET first_name = 'Jamie', last_name = 'Lannister', email='jamielannister@gameofthrones'
-    WHERE id = 1;
+    SET email='thorodinson@marvel.com'
+    WHERE id = 10;
   `;
   let msg = "User updated";
 
@@ -47,7 +74,7 @@ router.patch("/users", (req, res, next) => {
 router.delete("/users", (req, res, next) => {
   let sql = `
     DELETE FROM users
-    WHERE id = 6;
+    WHERE id = 5;
   `;
   let msg = "User deleted";
 
@@ -58,9 +85,8 @@ router.delete("/users", (req, res, next) => {
 router.put("/users", (req, res, next) => {
   let sql = `
     UPDATE users
-    SET first_name = 'Steve', last_name = 'Rogers',
-      email = 'steverogers@marvel.com', is_user_manager = 1
-    WHERE id = 8;
+    SET first_name = 'Loki',email = 'lokiodinson@marvel.com'
+    WHERE id = 10;
   `;
   let msg = "User has been put";
 
@@ -69,11 +95,12 @@ router.put("/users", (req, res, next) => {
 
 function dbQuery(req, res, sql, msg) {
   let db = req.con;
-  db.query(sql, err => {
+  db.query(sql, (err, rows) => {
     if (err) {
       console.log(err);
     }
     res.json(msg);
+    console.log(rows);
   });
 }
 

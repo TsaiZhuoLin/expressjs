@@ -46,6 +46,8 @@ app.use(function(req, res, next) {
   next();
 });
 
+app.use(express.json());
+
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 app.use("/api", apiRouter);
