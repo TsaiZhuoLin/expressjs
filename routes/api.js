@@ -8,10 +8,20 @@ router.get("/", function(req, res, next) {
 
 /* GET users API listing. */
 router.get("/users", function(req, res, next) {
+  // Here to check login
+
   let db = req.con;
   let data = "";
+  let jsonData = req.body;
+  let filerID = req.id;
+  let sql = `
+    SELECT
+      *
+    FROM
+      users;
+    `;
 
-  db.query("SELECT * FROM users", function(err, rows) {
+  db.query(sql, function(err, rows) {
     if (err) {
       console.log(err);
     }
@@ -19,31 +29,29 @@ router.get("/users", function(req, res, next) {
 
     // use index.ejs
     res.json(data);
-    console.log(rows);
   });
 });
 
 // POST users API listing
 router.post("/users", (req, res, next) => {
-  console.log(22, req.body);
-  var jsonData = req.body;
-  var first_name = jsonData.first_name;
-  var last_name = jsonData.last_name;
-  var email = jsonData.email;
-  var is_manager = jsonData.is_manager;
-  console.log(11, jsonData);
+  console.log(req.body);
+  let jsonData = req.body;
+  let first_name = jsonData.first_name;
+  let last_name = jsonData.last_name;
+  let email = jsonData.email;
+  let is_manager = jsonData.is_manager;
 
-  let sql = `INSERT INTO
-    users 
-              (first_name,
-                last_name,
-                email, 
-                is_user_manager)
-            VALUES 
-              ('${first_name}',
-               '${last_name}', 
-               '${email}',
-               '${is_manager}');`;
+  let sql = `
+    INSERT INTO users 
+      (first_name,
+        last_name,
+        email, 
+        is_user_manager)
+    VALUES 
+      ('${first_name}',
+        '${last_name}', 
+        '${email}',
+        '${is_manager}');`;
 
   let msg = "User posted";
 
@@ -51,11 +59,18 @@ router.post("/users", (req, res, next) => {
 });
 
 // Patch(update) user API
-router.patch("/users", (req, res, next) => {
+router.patch("/users/:id", (req, res, next) => {
+  console.log(req);
+  let jsonData = req.body;
+  let first_name = jsonData.first_name;
+  let last_name = jsonData.last_name;
+  let email = jsonData.email;
+  let idFilter = jsonData.id;
+
   let sql = `
     UPDATE users
-    SET email='thorodinson@marvel.com'
-    WHERE id = 10;
+    SET first_name = '${first_name}', last_name = '${last_name}', email ='${email}' 
+    WHERE id = ${req.params.id};
   `;
   let msg = "User updated";
 
@@ -63,10 +78,13 @@ router.patch("/users", (req, res, next) => {
 });
 
 // Delete user API
-router.delete("/users", (req, res, next) => {
+router.delete("/users/:id", (req, res, next) => {
+  let jsonData = req.body;
+  let deleteID = jsonData.id;
+
   let sql = `
     DELETE FROM users
-    WHERE id = 5;
+    WHERE id = ${req.params.id};
   `;
   let msg = "User deleted";
 
@@ -74,11 +92,22 @@ router.delete("/users", (req, res, next) => {
 });
 
 // Put user API
-router.put("/users", (req, res, next) => {
+router.put("/users/:id", (req, res, next) => {
+  let jsonData = req.body;
+  let filerID = jsonData.id;
+  let first_name = jsonData.first_name;
+  let last_name = jsonData.last_name;
+  let email = jsonData.email;
+  let is_user_manager = jsonData.is_user_manager;
+  console.log(jsonData);
+
   let sql = `
     UPDATE users
-    SET first_name = 'Loki',email = 'lokiodinson@marvel.com'
-    WHERE id = 10;
+    SET first_name = '${first_name}',
+        last_name = '${last_name}',
+        email ='${email}',
+        is_user_manager = ${is_user_manager}
+    WHERE id = ${req.params.id};
   `;
   let msg = "User has been put";
 

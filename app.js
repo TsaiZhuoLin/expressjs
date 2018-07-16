@@ -5,13 +5,14 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 
 const indexRouter = require("./routes/index");
-const usersRouter = require("./routes/users");
 const apiRouter = require("./routes/api");
+const authRouter = require("./routes/auth");
 
 const http = require("http");
 const hostname = "";
 
 const app = express();
+const session = require("express-session");
 
 // Database
 const mysql = require("mysql");
@@ -38,7 +39,23 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// express session
 app.use(express.static(path.join(__dirname, "public")));
+app.use(
+  session({
+    secret: "12345",
+    resave: true,
+    saveUninitialized: true
+  })
+);
+
+// Authentication and Authorization Middleware
+var auth = function(req, res, next) {
+  if (req.session && req.session.user === "amy" && req.session.admin)
+    return next();
+  else return res.sendStatus(401);
+};
 
 // db state
 app.use(function(req, res, next) {
@@ -46,11 +63,9 @@ app.use(function(req, res, next) {
   next();
 });
 
-app.use(express.json());
-
 app.use("/", indexRouter);
-app.use("/users", usersRouter);
 app.use("/api", apiRouter);
+app.use("/auth", authRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
