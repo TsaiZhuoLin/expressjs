@@ -1,57 +1,53 @@
-var express = require("express");
-var router = express.Router();
+const express = require("express");
+const router = express.Router();
+const errMsgs = "Something went wrong, please try again";
 
 /* GET users listing. */
-router.get("/", function(req, res, next) {
+router.get("/", (req, res) => {
   res.send("respond with a resource");
 });
 
 // Login API
-router.post("/login", (req, res, next) => {
+router.post("/login", (req, res) => {
   let db = req.con;
   let jsonData = req.body;
   let getID = jsonData.user_id;
   let getPW = jsonData.user_pw;
-  // console.log(`this is getID : ${getID}`);
-  // console.log(`this is getPW : ${getPW}`);
-  let msg = "login successfully";
-  // var data;
 
   let sql = `
     SELECT COUNT(*) AS total
     FROM
       users
     WHERE
-      first_name = '${getID}' AND password = '${getPW}';
+      first_name = '${getID}' AND
+      password = '${getPW}';
   `;
 
   db.query(sql, (err, results) => {
     if (err) {
-      console.log(err);
+      errHandler(errMsgs, err, res);
       return;
     }
 
     if (results[0].total === 0) {
-      return;
+      return res.send("User Login failed, please try again.");
     } else {
       res.cookie("first_name", getID);
     }
-    console.log(results[0].total);
-    // return results;
-    res.json(msg);
+    res.send("You have logined successfully");
   });
 });
 
-// function dbQuery(req, res, sql, msg) {
-//   let db = req.con;
-//   db.query(sql, (err, results) => {
-//     if (err) {
-//       console.log(err);
-//       return;
-//     }
-//     return results;
-//     //res.json(msg);
-//   });
-// }
+// Logout API
+router.get("/logout", (req, res) => {
+  res.clearCookie("first_name", { path: "/" });
+  res.send("User cookie delete!");
+});
+
+// Error handler
+function errHandler(errMsgs, err, res) {
+  res.send([errMsgs, err]);
+  res.end();
+}
 
 module.exports = router;
