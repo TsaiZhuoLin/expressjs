@@ -94,7 +94,7 @@ router.delete("/users/:id", (req, res, next) => {
 // Put user API
 router.put("/users/:id", (req, res, next) => {
   let jsonData = req.body;
-  let filerID = jsonData.id;
+  // let filerID = jsonData.id;
   let first_name = jsonData.first_name;
   let last_name = jsonData.last_name;
   let email = jsonData.email;
