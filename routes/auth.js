@@ -24,11 +24,7 @@ router.post("/login", (req, res) => {
   `;
 
   db.query(sql, (err, results) => {
-    if (err) {
-      errHandler(errMsgs, err, res);
-      return;
-    }
-
+    errHandler(err);
     if (results[0].total === 0) {
       return res.send("User Login failed, please try again.");
     } else {
@@ -45,9 +41,10 @@ router.get("/logout", (req, res) => {
 });
 
 // Error handler
-function errHandler(errMsgs, err, res) {
-  res.send([errMsgs, err]);
-  res.end();
+function errHandler(err) {
+  if (err) {
+    throw err;
+  }
 }
 
 module.exports = router;

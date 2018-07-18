@@ -1,186 +1,160 @@
 const express = require("express");
 const router = express.Router();
 
-const errMsgs = "Something went wrong, please try again";
-
 /* GET users listing. */
 router.get("/", function(req, res) {
   res.send("default api route");
 });
 
 /* GET users API listing. */
-router.get("/users", function(req, res) {
+router.get("/users", (req, res) => {
   // Here to check login
-  let getCookieUser = req.cookies.first_name;
+  userCheck(req, res, () => {
+    // if user has cookie then get all user data
+    let db = req.con,
+      getAllUsers = `
+      SELECT
+        *
+      FROM
+        users;
+    `;
 
-  if (!getCookieUser) {
-    res.send("Please Login");
-    res.end();
-    return;
-  }
-
-  let db = req.con;
-  let getAllUsers = `
-    SELECT
-      *
-    FROM
-      users;
-  `;
-  db.query(getAllUsers, (err, rows) => {
-    if (err) {
-      errHandler(errMsgs, err, res);
-      return;
-    }
-    var data = rows;
-    res.json(data);
+    db.query(getAllUsers, (err, rows) => {
+      errHandler(err);
+      let data = rows;
+      res.json(data);
+    });
   });
 });
 
 // POST users API listing
-router.post("/users", (req, res, next) => {
-  // check user if login or not
-  let getCookieUser = req.cookies.first_name;
-  if (!getCookieUser) {
-    res.send("Please Login");
-    res.end();
-    return;
-  }
+router.post("/users", (req, res) => {
+  userCheck(req, res, () => {
+    let db = req.con,
+      jsonData = req.body,
+      first_name = jsonData.first_name,
+      last_name = jsonData.last_name,
+      email = jsonData.email,
+      is_manager = jsonData.is_user_manager,
+      sql = `
+        INSERT INTO users (
+          first_name,
+          last_name,
+          email, 
+          is_user_manager
+        )
+        VALUES (
+          '${first_name}',
+          '${last_name}', 
+          '${email}',
+          '${is_manager}'
+        );
+      `;
 
-  let db = req.con;
-  let jsonData = req.body;
-  let first_name = jsonData.first_name;
-  let last_name = jsonData.last_name;
-  let email = jsonData.email;
-  let is_manager = jsonData.is_user_manager;
-  let msg = "New User has bee created";
-  let sql = `
-    INSERT INTO users (
-      first_name,
-      last_name,
-      email, 
-      is_user_manager
-    )
-    VALUES (
-      '${first_name}',
-      '${last_name}', 
-      '${email}',
-      '${is_manager}'
-    );
-  `;
-
-  db.query(sql, err => {
-    if (err) {
-      errHandler(errMsgs, err, res);
-      return;
-    }
-    res.send(msg);
+    db.query(sql, (err, results) => {
+      if (!err) {
+        res.send(results);
+      } else {
+        res.status(400);
+        res.send("something is wrong!");
+      }
+      // errHandler(err);
+      // res.send(results);
+    });
   });
 });
 
 // Patch(update) user API
-router.patch("/users/:id", (req, res, next) => {
-  // check user if login or not
-  let getCookieUser = req.cookies.first_name;
-  if (!getCookieUser) {
-    res.send("Please Login");
-    res.end();
-    return;
-  }
+router.patch("/users/:id", (req, res) => {
+  userCheck(req, res, () => {
+    let db = req.con,
+      jsonData = req.body,
+      first_name = jsonData.first_name,
+      last_name = jsonData.last_name,
+      email = jsonData.email,
+      is_user_manager = jsonData.is_user_manager,
+      sql = `
+        UPDATE
+          users
+        SET
+          first_name = '${first_name}',
+          last_name = '${last_name}',
+          email ='${email}',
+          is_user_manager = ${is_user_manager}
+        WHERE
+          id = ${req.params.id};
+      `;
 
-  let db = req.con;
-  let jsonData = req.body;
-  let first_name = jsonData.first_name;
-  let last_name = jsonData.last_name;
-  let email = jsonData.email;
-  let is_user_manager = jsonData.is_user_manager;
-  let sql = `
-    UPDATE
-      users
-    SET
-      first_name = '${first_name}',
-      last_name = '${last_name}',
-      email ='${email}',
-      is_user_manager = ${is_user_manager}
-    WHERE
-      id = ${req.params.id};
-  `;
-
-  db.query(sql, err => {
-    if (err) {
-      errHandler(errMsgs, err, res);
-      return;
-    }
-    res.send("User has been updated");
-  });
-});
-
-// Delete user API
-router.delete("/users/:id", (req, res, next) => {
-  // check user if login or not
-  let getCookieUser = req.cookies.first_name;
-  if (!getCookieUser) {
-    res.send("Please Login");
-    res.end();
-    return;
-  }
-  let db = req.con;
-  let sql = `
-    DELETE FROM users
-    WHERE id = ${req.params.id};
-  `;
-
-  db.query(sql, err => {
-    if (err) {
-      errHandler(errMsgs, err, res);
-      return;
-    }
-    res.send("User has been deleted");
+    db.query(sql, err => {
+      errHandler(err);
+      res.send("User has been updated");
+    });
   });
 });
 
 // Put user API
 router.put("/users/:id", (req, res, next) => {
-  // check user if login or not
-  let getCookieUser = req.cookies.first_name;
+  userCheck(req, res, () => {
+    let db = req.con,
+      jsonData = req.body,
+      first_name = jsonData.first_name,
+      last_name = jsonData.last_name,
+      password = jsonData.password,
+      email = jsonData.email,
+      is_user_manager = jsonData.is_user_manager,
+      sql = `
+        UPDATE
+          users
+        SET
+          first_name = '${first_name}',
+          last_name = '${last_name}',
+          password = '${password}',
+          email ='${email}',
+          is_user_manager = ${is_user_manager}
+        WHERE
+          id = ${req.params.id};
+      `;
 
-  if (!getCookieUser) {
-    res.send("Please Login");
-    res.end();
-    return;
-  }
-
-  let db = req.con;
-  let jsonData = req.body;
-  let first_name = jsonData.first_name;
-  let last_name = jsonData.last_name;
-  let password = jsonData.password;
-  let email = jsonData.email;
-  let is_user_manager = jsonData.is_user_manager;
-  let sql = `
-    UPDATE
-      users
-    SET
-      first_name = '${first_name}',
-      last_name = '${last_name}',
-      password = '${password}',
-      email ='${email}',
-      is_user_manager = ${is_user_manager}
-    WHERE
-      id = ${req.params.id};
-  `;
-
-  db.query(sql, err => {
-    if (err) {
-      errHandler(errMsgs, err, res);
-      return;
-    }
-    res.send("User data has been updated");
+    db.query(sql, err => {
+      errHandler(err);
+      res.send("User data has been updated too");
+    });
   });
 });
 
-function errHandler(errMsgs, err, res) {
-  res.send([errMsgs, err]);
-  res.end();
+// Delete user API
+router.delete("/users/:id", (req, res, next) => {
+  userCheck(req, res, () => {
+    let db = req.con,
+      sql = `
+        DELETE FROM users
+        WHERE id = ${req.params.id};
+      `;
+
+    db.query(sql, err => {
+      errHandler(err);
+      res.send("User has been deleted");
+    });
+  });
+});
+
+// Error handler
+function errHandler(err) {
+  if (err) throw err;
+}
+
+// if (!err) {
+//   res.send(results);
+// } else {
+//   res.status(400);
+//   res.send("something is wrong!");
+// }
+
+// user login check
+function userCheck(req, res, cb) {
+  let getCookieUser = req.cookies.first_name;
+  if (!getCookieUser) return res.send("Please Login").end();
+  cb();
 }
 
 module.exports = router;
