@@ -13,15 +13,16 @@ router.get("/users", (req, res) => {
     // if user has cookie then get all user data
     let db = req.con,
       getAllUsers = `
-      SELECT
-        *
-      FROM
-        users;
-    `;
+        SELECT
+          *
+        FROM
+          users;
+      `;
 
     db.query(getAllUsers, (err, rows) => {
       errHandler(err);
       let data = rows;
+      // res.set("Access-Control-Allow-Origin", "*");
       res.json(data);
     });
   });
@@ -35,13 +36,13 @@ router.post("/users", (req, res) => {
       first_name = jsonData.first_name,
       last_name = jsonData.last_name,
       email = jsonData.email,
-      is_manager = jsonData.is_user_manager,
+      is_manager = jsonData.is_manager,
       sql = `
         INSERT INTO users (
           first_name,
           last_name,
           email, 
-          is_user_manager
+          is_manager
         )
         VALUES (
           '${first_name}',

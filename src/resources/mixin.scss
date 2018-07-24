@@ -1,0 +1,19 @@
+/* flexbox mixin */
+@mixin flex($main:center, $cross:center) {
+	display: flex;
+	justify-content: $main;
+	align-items: $cross;
+}
+
+@mixin gridItemPosition($justify:center, $align:center) {
+	justify-self: $justify;
+	align-self: $align;
+}
+
+
+@mixin gridCR($columnStart, $columnEnd, $rowStart, $rowEnd) {
+  grid-column-start: $columnStart;
+  grid-column-end: $columnEnd;
+  grid-row-start: $rowStart;
+  grid-row-end: $rowEnd;
+}

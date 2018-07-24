@@ -9,6 +9,7 @@ router.get("/", (req, res) => {
 
 // Login API
 router.post("/login", (req, res) => {
+  console.log(123, req.body);
   let db = req.con;
   let jsonData = req.body;
   let getID = jsonData.user_id;
@@ -26,7 +27,9 @@ router.post("/login", (req, res) => {
   db.query(sql, (err, results) => {
     errHandler(err);
     if (results[0].total === 0) {
-      return res.send("User Login failed, please try again.");
+      res.redirect("/");
+      // res.send("User Login failed, please try again.");
+      return;
     } else {
       res.cookie("first_name", getID);
     }

@@ -1,0 +1,15 @@
+.inputBlock {
+  width: 350px;
+  height: 180px;
+  // background: mistyrose;
+  border-radius: 5px;
+  padding: 5px;
+
+  input::placeholder {
+    font-size: 12px;
+  }
+
+  label {
+    font-size: 18px;
+  }
+}
