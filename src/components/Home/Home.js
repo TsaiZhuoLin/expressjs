@@ -23,12 +23,6 @@ export default class Home extends Component {
     };
   }
 
-  onAdd(value) {
-    console.log("====================================");
-    console.log("this is from" + value);
-    console.log("====================================");
-  }
-
   render() {
     return (
       <div className="masterContainer">

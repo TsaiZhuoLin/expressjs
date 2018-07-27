@@ -10,7 +10,6 @@ class MyInput extends Component {
     this.state = {
       user_id: "",
       user_pw: "",
-      redirect: false
     };
   }
 
@@ -34,7 +33,7 @@ class MyInput extends Component {
       headers: {
         "Content-Type": "application/json"
       },
-      credentials: "same-origin"
+      credentials: "include"
     })
       .then(res => {
         // login failed status 401
@@ -45,7 +44,7 @@ class MyInput extends Component {
         //login successful status 200
         if (res.status == 200) {
           //console.log(333, document.cookie);
-          //this.props.history.push("/UserPage");
+          this.props.history.push("/UserPage");
         }
       })
       .catch(err => console.log(33, `We got errors : ${err}`));

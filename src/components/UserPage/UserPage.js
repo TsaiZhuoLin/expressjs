@@ -167,7 +167,7 @@ export default class UserPage extends Component {
                   <th data-field="first_name">First Name</th>
                   <th data-field="last_name">Last Name</th>
                   <th data-field="Email">Email</th>
-                  <th data-field="is_manager">Is Manager</th>
+                  <th data-field="is_manager">Role</th>
                   <th data-field="created_time">Created Time</th>
                   <th data-field="updated_time">Updated Time</th>
                   <th data-field="updater">Edit&Delete</th>
@@ -211,7 +211,7 @@ export default class UserPage extends Component {
             <Input
               className="userFirstNameInput"
               placeholder={this.state.passDataToEdit[0].first_name}
-              s={8}
+              s={6}
               label="First Name"
               defaultValue={this.state.first_name}
               maxLength="50"
@@ -224,7 +224,7 @@ export default class UserPage extends Component {
             <Input
               className="userLastNameInput"
               placeholder={this.state.passDataToEdit[0].last_name}
-              s={8}
+              s={6}
               label="Last Name"
               // defaultValue={this.state.last_name}
               maxLength="50"
@@ -237,7 +237,7 @@ export default class UserPage extends Component {
             <Input
               className="userPasswordInput"
               placeholder={this.state.passDataToEdit[0].password}
-              s={8}
+              s={6}
               label="Password"
               // defaultValue={this.state.password}
               maxLength="50"
@@ -250,7 +250,7 @@ export default class UserPage extends Component {
             <Input
               className="userEmailInput"
               placeholder={this.state.passDataToEdit[0].email}
-              s={8}
+              s={6}
               label="Email"
               // defaultValue={this.state.email}
               maxLength="50"

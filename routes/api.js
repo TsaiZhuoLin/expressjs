@@ -8,11 +8,8 @@ const router = express.Router();
 
 /* GET users API listing. */
 router.get("/users", (req, res) => {
-  // res.set("Access-Control-Allow-Origin", "http://localhost:8080");
-  // res.set("Access-Control-Allow-Credentials", true);
-  // console.log("Cookies: ", req.cookies);
   // Here to check login
-  //userCheck(req, res, () => {
+  // userCheck(req, res, () => {
   // if user has cookie then get all user data
   let db = req.con,
     getAllUsers = `
@@ -27,7 +24,7 @@ router.get("/users", (req, res) => {
     let data = rows;
     res.json(data);
   });
-  //});
+  // });
 });
 
 // POST users API listing

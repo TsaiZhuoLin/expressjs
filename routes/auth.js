@@ -25,9 +25,8 @@ router.post("/login", (req, res) => {
   db.query(sql, (err, results) => {
     errHandler(err);
     if (results[0].total === 0) {
-      // res.redirect("/");
-      // res.send("User Login failed, please try again.");
-      res.status(401).end();
+      res.send("User Login failed, please try again.");
+      // res.status(401).end();
       return;
     }
     console.log(getID);
@@ -41,6 +40,8 @@ router.get("/logout", (req, res) => {
   res.clearCookie("first_name", { path: "/" });
   res.send("User cookie delete!");
 });
+
+
 
 // Error handler
 function errHandler(err) {
