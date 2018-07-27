@@ -22,18 +22,19 @@ router.post("/login", (req, res) => {
       password = '${getPW}';
   `;
 
-  db.query(sql, (err, results) => {
-    errHandler(err);
-    if (results[0].total === 0) {
-      // res.redirect("/");
-      // res.send("User Login failed, please try again.");
-      res.status(401).end();
-      return;
-    }
-    console.log(getID);
+  // db.query(sql, (err, results) => {
+  //   errHandler(err);
+  //   if (results[0].total === 0) {
+  //     // res.redirect("/");
+  //     // res.send("User Login failed, please try again.");
+  //     res.status(401).end();
+  //     return;
+  //   }
+  //   console.log(getID);
     res.cookie("first_name", getID);
-    res.send("You have logined successfully");
-  });
+    res.cookie('currentTime', `${new Date().getTime()}`);
+    res.status(200).send("You have logined successfully");
+  // });
 });
 
 // Logout API

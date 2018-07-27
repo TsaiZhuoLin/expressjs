@@ -34,7 +34,7 @@ class MyInput extends Component {
       headers: {
         "Content-Type": "application/json"
       },
-      credentials: "same-origin"
+      credentials: "include"
     })
       .then(res => {
         // login failed status 401

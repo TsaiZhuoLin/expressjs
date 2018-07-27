@@ -25,13 +25,13 @@ const con = mysql.createConnection({
   database: "users"
 });
 
-con.connect(function (err) {
-  if (err) {
-    console.log("connecting error");
-    return;
-  }
-  console.log("connecting success");
-});
+// con.connect(function (err) {
+//   if (err) {
+//     console.log("connecting error");
+//     return;
+//   }
+//   console.log("connecting success");
+// });
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
