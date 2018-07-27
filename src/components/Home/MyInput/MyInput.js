@@ -2,14 +2,15 @@ import React, { Component } from "react";
 import "./MyInput.scss";
 
 import { Row, Input, Button } from "react-materialize";
-import { Link } from "react-router-dom";
+import { withRouter } from "react-router-dom";
 
-export default class MyInput extends Component {
+class MyInput extends Component {
   constructor(props) {
     super(props);
     this.state = {
       user_id: "",
-      user_pw: ""
+      user_pw: "",
+      redirect: false
     };
   }
 
@@ -26,7 +27,6 @@ export default class MyInput extends Component {
   }
 
   signInBtnClick() {
-    console.log(this.state);
     let userLoginData = this.state;
     fetch("http://localhost:3000/auth/login", {
       method: "POST",
@@ -34,10 +34,20 @@ export default class MyInput extends Component {
       headers: {
         "Content-Type": "application/json"
       }
+      // credentials: "same-origin"
     })
-      .then(res => res.text())
-      .then(data => console.log(data))
-      .catch(err => console.log(`We got errors : ${err}`));
+      .then(res => {
+        // login failed status 401
+        if (res.status == 401) {
+          alert("Please check username/password");
+          return;
+        }
+        //login successful status 200
+        if (res.status == 200) {
+          this.props.history.push("/UserPage");
+        }
+      })
+      .catch(err => console.log(33, `We got errors : ${err}`));
   }
 
   render() {
@@ -60,17 +70,16 @@ export default class MyInput extends Component {
           defaultValue={this.state.user_PW}
           onChange={e => this.inputUserPW(e)}
         />
-
-        <Link to="/UserPage">
-          <Button
-            className="green lighten-1 signBtnEle"
-            waves="light"
-            onClick={() => this.signInBtnClick()}
-          >
-            Sign In
-          </Button>
-        </Link>
+        <Button
+          className="green lighten-1 signBtnEle"
+          waves="light"
+          onClick={() => this.signInBtnClick()}
+        >
+          Sign In
+        </Button>
       </Row>
     );
   }
 }
+
+export default withRouter(MyInput);

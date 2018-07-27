@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const errMsgs = "Something went wrong, please try again";
 
 /* GET users listing. */
 router.get("/", (req, res) => {
@@ -9,7 +8,6 @@ router.get("/", (req, res) => {
 
 // Login API
 router.post("/login", (req, res) => {
-  console.log(123, req.body);
   let db = req.con;
   let jsonData = req.body;
   let getID = jsonData.user_id;
@@ -27,13 +25,13 @@ router.post("/login", (req, res) => {
   db.query(sql, (err, results) => {
     errHandler(err);
     if (results[0].total === 0) {
-      res.redirect("/");
+      // res.redirect("/");
       // res.send("User Login failed, please try again.");
+      res.status(401).end();
       return;
-    } else {
-      res.cookie("first_name", getID);
     }
-    res.send("You have logined successfully");
+    // res.cookie("first_name", getID, { maxAge: 900000, httpOnly: true });
+    res.status(200).send("You have logined successfully");
   });
 });
 

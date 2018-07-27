@@ -2,12 +2,8 @@ import React, { Component } from "react";
 import "./home.scss";
 
 import MyInput from "./MyInput/MyInput";
-import SignInBtn from "./SignInBtn/SignInBtn";
 
-import { Container, Button, Table, Modal, Row, Input } from "react-materialize";
-import AddUserModal from "./Modals/AddUserModal";
-import EditUserModal from "./Modals/EditUserModal";
-import DeleteUserModal from "./Modals/DeleteUserModal";
+import { Container } from "react-materialize";
 
 export default class Home extends Component {
   constructor(props) {

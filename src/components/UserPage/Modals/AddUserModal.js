@@ -5,72 +5,50 @@ export default class AddUserModal extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      record: this.props.record || {},
-      newUserData: {
-        id: "",
-        first_name: "",
-        last_name: "",
-        email: "",
-        created_time: "",
-        updated_time: "",
-        creator: "",
-        updater: ""
-      }
+      first_name: "",
+      last_name: "",
+      password: "",
+      email: "",
+      is_manager: "",
+      is_post: false
     };
-    this.inputIDChange = this.inputIDChange.bind(this);
-    this.inputFirstNameChange = this.inputFirstNameChange.bind(this);
   }
 
-  test() {
-    console.log(this.state);
-    // this.props.onAdd("this is from home.js");
-  }
-
-  inputIDChange(e) {
-    // this.setState({
-    //   newUserData: {
-    //     id: e.target.value
-    //   }
-    // });
-
-    this.setState(prevState => ({
-      newUserData: {
-        ...prevState.newUserData,
-        id: e.target.value
+  addNewUser() {
+    let newUserData = this.state;
+    fetch("http://localhost:3000/api/users", {
+      method: "POST",
+      body: JSON.stringify(newUserData),
+      headers: {
+        "Content-Type": "application/json"
       }
-    }));
-
-    // let v = e.target.value;
-    // this.setState(
-    //   prevState => ({
-    //     ...prevState,
-    //     newUserData: {
-    //       ...prevState.newUserData
-    //       // id: 100
-    //       // id: v
-    //       // id: v
-    //     }
-    //   }),
-    //   () => console.log(this.state)
-    // );
+    })
+      .then(res => console.log(res))
+      .catch(err => console.log(`We got errors : ${err}`));
+    this.closeModal();
+    this.getAllUsers();
   }
 
-  inputFirstNameChange(e) {
-    // this.setState({
-    //   newUserData: {
-    //     first_name: e.target.value
-    //   }
-    // });
-
-    this.setState(prevState => ({
-      newUserData: {
-        ...prevState.newUserData,
-        id: e.target.value
-      }
-    }));
+  getAllUsers() {
+    fetch("http://localhost:3000/api/users", {
+      method: "GET"
+      // credentials: "include"
+    })
+      .then(res => {
+        return res.json();
+      })
+      .then(data => {
+        this.setState({
+          userData: data
+        });
+      })
+      .catch(err => console.log(`We got errors : ${err}`));
   }
 
-  inputLastNameChange(e) {}
+  closeModal() {
+    $(".input-field > input").val("");
+    $("#addUserModal").modal("close");
+  }
 
   render() {
     return (
@@ -80,7 +58,7 @@ export default class AddUserModal extends Component {
         actions={
           <div className="modalBtnBlock">
             <Button
-              onClick={() => $("#addUserModal").modal("close")}
+              onClick={() => this.closeModal()}
               className="red darken-3"
               waves="light"
             >
@@ -90,7 +68,7 @@ export default class AddUserModal extends Component {
               className="green lighten-1"
               waves="light"
               onClick={() => {
-                this.test();
+                this.addNewUser();
               }}
             >
               Add
@@ -100,28 +78,16 @@ export default class AddUserModal extends Component {
       >
         <Row className="addUserInputBlock">
           <Input
-            className="userIDInput"
-            placeholder="ID..."
-            s={8}
-            type="text"
-            label="ID"
-            defaultValue={this.state.newUserData.id}
-            onChange={e => this.inputIDChange(e)}
-          />
-          <Input
             className="userFirstNameInput"
             placeholder="First Name..."
             s={8}
             label="First Name"
-            defaultValue={this.state.newUserData.first_name}
-            onChange={
-              e => this.inputFirstNameChange(e)
-              // this.setState(prevState => ({
-              //   newUserData: {
-              //     ...prevState.newUserData,
-              //     first_name: e.target.value
-              //   }
-              // }));
+            defaultValue={this.state.first_name}
+            maxLength="50"
+            onChange={e =>
+              this.setState({
+                first_name: e.target.value
+              })
             }
           />
           <Input
@@ -129,38 +95,52 @@ export default class AddUserModal extends Component {
             placeholder="Last Name..."
             s={8}
             label="Last Name"
-            defaultValue={this.state.newUserData.last_name}
-            onChange={e => this.inputLastNameChange(e)}
+            defaultValue={this.state.last_name}
+            maxLength="50"
+            onChange={e =>
+              this.setState({
+                last_name: e.target.value
+              })
+            }
           />
           <Input
             className="userPasswordInput"
             placeholder="Password..."
             s={8}
             label="Password"
-            defaultValue={this.state.newUserData.password}
-            onChange={e => {
-              this.setState(prevState => ({
-                newUserData: {
-                  ...prevState.newUserData,
-                  password: e.target.value
-                }
-              }));
-            }}
+            defaultValue={this.state.password}
+            maxLength="50"
+            onChange={e =>
+              this.setState({
+                password: e.target.value
+              })
+            }
           />
           <Input
             className="userEmailInput"
             placeholder="Email..."
             s={8}
             label="Email"
-            defaultValue={this.state.newUserData.email}
-            onChange={e => {
-              this.setState(prevState => ({
-                newUserData: {
-                  ...prevState.newUserData,
-                  email: e.target.value
-                }
-              }));
-            }}
+            defaultValue={this.state.email}
+            maxLength="50"
+            onChange={e =>
+              this.setState({
+                email: e.target.value
+              })
+            }
+          />
+          <Input
+            className="userIsManagerInput"
+            placeholder="Is manager..."
+            s={8}
+            label="Is Manager"
+            defaultValue={this.state.is_manager}
+            maxLength="5"
+            onChange={e =>
+              this.setState({
+                is_manager: e.target.value
+              })
+            }
           />
         </Row>
       </Modal>
