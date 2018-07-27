@@ -104,7 +104,6 @@ router.get("/users/:id", (req, res) => {
   // Here to check login
   // userCheck(req, res, () => {
   // if user has cookie then get all user data
-  console.log(111, req.params.id);
   let db = req.con,
     getUser = `
         SELECT

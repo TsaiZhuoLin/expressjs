@@ -9,8 +9,7 @@ export default class AddUserModal extends Component {
       last_name: "",
       password: "",
       email: "",
-      is_manager: "",
-      is_post: false
+      is_manager: ""
     };
   }
 

@@ -5,16 +5,13 @@ import { Button, Table, Modal, Row, Input } from "react-materialize";
 
 import { Link } from "react-router-dom";
 import AddUserModal from "./Modals/AddUserModal";
-import EditUserModal from "./Modals/EditUserModal";
-import DeleteUserModal from "./Modals/DeleteUserModal";
 
 export default class UserPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
       userData: [],
-      passDataToEdit: [{}],
-      userProfileEdit: {}
+      passDataToEdit: [{}]
     };
   }
 
@@ -38,9 +35,7 @@ export default class UserPage extends Component {
       .catch(err => console.log(`We got errors : ${err}`));
   }
 
-  editUser(userID) {
-    console.log("EDIT USER ID =>", userID);
-    console.log;
+  getEditUser(userID) {
     fetch(`http://localhost:3000/api/users/${userID}`)
       .then(res => {
         return res.json();
@@ -55,26 +50,8 @@ export default class UserPage extends Component {
     $("#editUserModal").modal("open");
   }
 
-  closeModal() {
-    $(".input-field > input").val("");
-    $("#addUserModal").modal("close");
-    $("#editUserModal").modal("close");
-    $("#deleteUserModal").modal("close");
-  }
-
-  // closeModal() {
-  //   $(".input-field > input").val("");
-  //   $("#editUserModal").modal("close");
-  // }
-
-  setEditData(editData) {
-    this.setState({});
-  }
-
   editUserConfirm() {
-    console.log(999, this.state);
     let editUserData = this.state;
-    console.log(editUserData);
     fetch(`http://localhost:3000/api/users/${editUserData.user_id}`, {
       method: "PUT",
       body: JSON.stringify(editUserData),
@@ -85,7 +62,6 @@ export default class UserPage extends Component {
       .then(res => console.log(res))
       .catch(err => console.log(`We got errors : ${err}`));
     this.closeModal();
-    this.getAllUsers();
   }
 
   getDeleteUser(userID) {
@@ -96,10 +72,7 @@ export default class UserPage extends Component {
     $("#deleteUserModal").modal("open");
   }
 
-  confirmDelete(userID) {
-    console.log("Delete ID =>", userID);
-    // {`Delete ID => ${this.state.deleteUserID}`}
-    // fetch();
+  deleteUserConfirm(userID) {
     fetch(`http://localhost:3000/api/users/${userID}`, {
       method: "DELETE",
       // body: JSON.stringify(newUserData),
@@ -110,14 +83,29 @@ export default class UserPage extends Component {
       .then(res => console.log(res))
       .catch(err => console.log(`We got errors : ${err}`));
     this.closeModal();
-    this.getAllUsers();
+  }
+
+  testing() {
+    console.log(this.state);
+  }
+
+  closeModal() {
+    $(".input-field > input").val("");
+    $("#addUserModal").modal("close");
+    $("#editUserModal").modal("close");
+    $("#deleteUserModal").modal("close");
   }
 
   render() {
+    console.log(this.state);
+    const btn = {
+      width: "100px",
+      height: "25px"
+    };
     const userData = this.state.userData.map(data => {
       return (
         <tr key={data.id}>
-          <td>{Number(data.id)}</td>
+          <td>{data.id}</td>
           <td>{data.first_name}</td>
           <td>{data.last_name}</td>
           <td>{data.email}</td>
@@ -126,7 +114,7 @@ export default class UserPage extends Component {
           <td>{data.updated_time}</td>
           <td>
             <Button
-              onClick={() => this.editUser(data.id)}
+              onClick={() => this.getEditUser(data.id)}
               className="yellow darken-2 editBtn"
               waves="light"
             >
@@ -143,10 +131,11 @@ export default class UserPage extends Component {
         </tr>
       );
     });
-
-    // const editUserData = this.state.passDataToEdit[0];
     return (
       <div className="userPageBlock">
+        <button style={btn} onClick={() => this.testing()}>
+          Test 1
+        </button>
         <div className="headerBlock">
           <div className="nameBlock">User Manager</div>
 
@@ -190,8 +179,6 @@ export default class UserPage extends Component {
           </div>
 
           <AddUserModal />
-          {/* <EditUserModal getUserData={this.state.passDataToEdit} /> */}
-          {/* <DeleteUserModal /> */}
         </div>
 
         {/* Edit User Modal */}
@@ -217,13 +204,17 @@ export default class UserPage extends Component {
             </div>
           }
         >
+          <button style={btn} onClick={() => this.testing()}>
+            Test
+          </button>
           <Row className="editUserInputBlock">
             <Input
               className="userFirstNameInput"
               placeholder={this.state.passDataToEdit[0].first_name}
               s={8}
               label="First Name"
-              // defaultValue={this.state.first_name}
+              defaultValue={this.state.first_name}
+              maxLength="50"
               onChange={e =>
                 this.setState({
                   first_name: e.target.value
@@ -236,6 +227,7 @@ export default class UserPage extends Component {
               s={8}
               label="Last Name"
               // defaultValue={this.state.last_name}
+              maxLength="50"
               onChange={e =>
                 this.setState({
                   last_name: e.target.value
@@ -248,6 +240,7 @@ export default class UserPage extends Component {
               s={8}
               label="Password"
               // defaultValue={this.state.password}
+              maxLength="50"
               onChange={e =>
                 this.setState({
                   password: e.target.value
@@ -260,6 +253,7 @@ export default class UserPage extends Component {
               s={8}
               label="Email"
               // defaultValue={this.state.email}
+              maxLength="50"
               onChange={e =>
                 this.setState({
                   email: e.target.value
@@ -272,6 +266,7 @@ export default class UserPage extends Component {
               s={8}
               label="Is Manager"
               // defaultValue={this.state.is_manager}
+              maxLength="5"
               onChange={e =>
                 this.setState({
                   is_manager: e.target.value
@@ -284,7 +279,7 @@ export default class UserPage extends Component {
         {/* Delete Modal */}
         <Modal id="deleteUserModal" className="deleteUserModalBlock" actions="">
           <div className="modalBtnBlock">
-            <p>Are you sure you want to delete this user data?</p>
+            <h1>Are you sure you want to delete this user data?</h1>
             {`Delete ID => ${this.state.deleteUserID}`}
             <Button
               onClick={() => $("#deleteUserModal").modal("close")}
@@ -296,7 +291,7 @@ export default class UserPage extends Component {
             <Button
               className="red darken-3"
               waves="light"
-              onClick={() => this.confirmDelete(this.state.deleteUserID)}
+              onClick={() => this.deleteUserConfirm(this.state.deleteUserID)}
             >
               Delete
             </Button>

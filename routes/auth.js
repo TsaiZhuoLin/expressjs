@@ -30,8 +30,9 @@ router.post("/login", (req, res) => {
       res.status(401).end();
       return;
     }
-    // res.cookie("first_name", getID, { maxAge: 900000, httpOnly: true });
-    res.status(200).send("You have logined successfully");
+    console.log(getID);
+    res.cookie("first_name", getID);
+    res.send("You have logined successfully");
   });
 });
 

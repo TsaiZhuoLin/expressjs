@@ -25,7 +25,7 @@ const con = mysql.createConnection({
   database: "users"
 });
 
-con.connect(function(err) {
+con.connect(function (err) {
   if (err) {
     console.log("connecting error");
     return;
@@ -37,7 +37,10 @@ con.connect(function(err) {
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://127.0.0.1:8080',
+  credentials: true
+}));
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -45,23 +48,23 @@ app.use(cookieParser());
 
 // express session
 app.use(express.static(path.join(__dirname, "public")));
-app.use(
-  session({
-    secret: "12345",
-    resave: true,
-    saveUninitialized: true
-  })
-);
+// app.use(
+//   session({
+//     secret: "12345",
+//     resave: true,
+//     saveUninitialized: true
+//   })
+// );
 
 // Authentication and Authorization Middleware
-var auth = function(req, res, next) {
+var auth = function (req, res, next) {
   if (req.session && req.session.user === "amy" && req.session.admin)
     return next();
   else return res.sendStatus(401);
 };
 
 // db state
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   req.con = con;
   next();
 });
@@ -71,12 +74,12 @@ app.use("/api", apiRouter);
 app.use("/auth", authRouter);
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   next(createError(404));
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};

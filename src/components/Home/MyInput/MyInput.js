@@ -33,8 +33,8 @@ class MyInput extends Component {
       body: JSON.stringify(userLoginData),
       headers: {
         "Content-Type": "application/json"
-      }
-      // credentials: "same-origin"
+      },
+      credentials: "same-origin"
     })
       .then(res => {
         // login failed status 401
@@ -44,7 +44,8 @@ class MyInput extends Component {
         }
         //login successful status 200
         if (res.status == 200) {
-          this.props.history.push("/UserPage");
+          //console.log(333, document.cookie);
+          //this.props.history.push("/UserPage");
         }
       })
       .catch(err => console.log(33, `We got errors : ${err}`));
