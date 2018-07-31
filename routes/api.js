@@ -14,7 +14,10 @@ router.get("/users", (req, res) => {
   let db = req.con,
     getAllUsers = `
         SELECT
-          *
+          id, first_name, last_name, password, email, role,
+          date_format(created_time, '%Y-%m-%d %H:%i:%s') as created_time,
+          date_format(updated_time, '%Y-%m-%d %H:%i:%s') as updated_time
+          
         FROM
           users;
       `;
@@ -27,31 +30,30 @@ router.get("/users", (req, res) => {
   // });
 });
 
-// POST users API listing
+// Create users API listing
 router.post("/users", (req, res) => {
   // userCheck(req, res, () => {
-  console.log(333, req.body);
   let db = req.con,
     jsonData = req.body,
     first_name = jsonData.first_name,
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    is_manager = jsonData.is_manager,
+    role = jsonData.role,
     sql = `
         INSERT INTO users (
           first_name,
           last_name,
           password,
           email,
-          is_manager
+          role
         )
         VALUES (
           '${first_name}',
           '${last_name}',
           '${password}',
           '${email}',
-          '${is_manager}'
+          '${role}'
         );
       `;
 

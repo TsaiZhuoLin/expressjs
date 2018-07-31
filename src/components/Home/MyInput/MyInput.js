@@ -44,6 +44,7 @@ class MyInput extends Component {
         //login successful status 200
         if (res.status == 200) {
           //console.log(333, document.cookie);
+          console.log(555, res)
           this.props.history.push("/UserPage");
         }
       })
@@ -63,6 +64,7 @@ class MyInput extends Component {
         />
 
         <Input
+          type="password"
           className="inputPWEle"
           placeholder="Please enter your Password..."
           s={12}

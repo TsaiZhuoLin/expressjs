@@ -1,11 +1,9 @@
 .userPageBlock {
-
   width: 100vw;
   height: 100vh;
   background: #ECFFFB;
 
   .headerBlock {
-
     width: 100vw;
     height: 10%;
     background: #99E1E5;
@@ -21,16 +19,16 @@
     }
 
     .avatarBlock {
-      width: 200px;
+      width: 400px;
       height: 100%;
       background: #4E709D;
       color: #fff;
       @include flex(space-around);
       
       .avatarPicEle{
-        width: 60px;
+        width: 200px;
         height: 60px;
-        border-radius: 50%;
+        border-radius: 5px;
         background: #000;
         font-size: 24px;
         @include flex;
@@ -72,6 +70,57 @@
       height: 80%;
       background: #FFFFFF;
       overflow-y: scroll;
+
+      tbody {
+        .tdEditDelete {
+          @include flex;
+          div {
+            width: 220px;
+            @include flex(space-between);
+            button {
+              width: 100px;
+            }
+          } 
+        }
+      }
+    }
+  }
+}
+
+
+.editUserModalBlock {
+  .editModalBtnBlock {
+    @include flex(flex-end);
+    div {
+      width: 220px;
+      @include flex(space-between);
+      button {
+        width: 100px;
+      }
+    }
+  }
+}
+
+.deleteUserModalBlock {
+  .deleteModalBtnBlock {
+    @include flex;
+    flex-direction: column;
+    h3 {
+      margin-bottom: 50px;
+    }
+    ul {
+      margin-bottom: 50px;
+      li {
+        font-size: 24px;
+      }
+    }
+
+    div {
+      width: 250px;
+      @include flex(space-between);
+      button {
+        width: 100px;
+      }
     }
   }
 }

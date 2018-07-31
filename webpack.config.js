@@ -24,30 +24,30 @@ module.exports = {
         test: /\.scss$/,
         use: isProd
           ? [
-              "style-loader",
-              MiniCssExtractPlugin.loader,
-              "css-loader",
-              "postcss-loader",
-              "sass-loader",
-              {
-                loader: "sass-resources-loader",
-                options: {
-                  resources: "./src/resources/*.scss"
-                }
+            "style-loader",
+            MiniCssExtractPlugin.loader,
+            "css-loader",
+            "postcss-loader",
+            "sass-loader",
+            {
+              loader: "sass-resources-loader",
+              options: {
+                resources: "./src/resources/*.scss"
               }
-            ]
+            }
+          ]
           : [
-              "style-loader",
-              "css-loader",
-              "postcss-loader",
-              "sass-loader",
-              {
-                loader: "sass-resources-loader",
-                options: {
-                  resources: "./src/resources/*.scss"
-                }
+            "style-loader",
+            "css-loader",
+            "postcss-loader",
+            "sass-loader",
+            {
+              loader: "sass-resources-loader",
+              options: {
+                resources: "./src/resources/*.scss"
               }
-            ]
+            }
+          ]
       },
       {
         test: /\.(png|jpg|gif|svg)$/i,
@@ -98,4 +98,7 @@ module.exports = {
   ]
 };
 
-console.log(isProd ? "It is Production" : "It is Devolopment");
+console.log(isProd
+  ? "===== It is Production ====="
+  : "===== It is Devolopment ====="
+);

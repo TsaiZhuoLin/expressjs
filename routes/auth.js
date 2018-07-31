@@ -14,12 +14,15 @@ router.post("/login", (req, res) => {
   let getPW = jsonData.user_pw;
 
   let sql = `
-    SELECT COUNT(*) AS total
+    SELECT
+      id, COUNT(*) AS total, first_name, last_name
     FROM
       users
     WHERE
-      first_name = '${getID}' AND
-      password = '${getPW}';
+      first_name = '${getID}'
+      AND  password = '${getPW}'
+    GROUP BY
+      id;
   `;
 
   db.query(sql, (err, results) => {
@@ -29,9 +32,11 @@ router.post("/login", (req, res) => {
       // res.status(401).end();
       return;
     }
-    console.log(getID);
-    res.cookie("first_name", getID);
-    res.send("You have logined successfully");
+    console.log(222, getID);
+    console.log(333, results)
+    res.cookie("first_name", results[0].first_name);
+    res.cookie("last_name", results[0].last_name);
+    res.send("You have logined!");
   });
 });
 

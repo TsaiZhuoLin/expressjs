@@ -11,12 +11,30 @@ export default class UserPage extends Component {
     super(props);
     this.state = {
       userData: [],
-      passDataToEdit: [{}]
+      passDataToEdit: [{}],
+      loginUserFirstName: "",
+      loginUserLastName: "",
+      first_name: "",
+      last_name: "",
+      password: "",
+      email: "",
+      role: ""
     };
   }
 
   componentDidMount() {
     this.getAllUsers();
+
+    const getCookie = document.cookie.split(";");
+    const getNameAry = getCookie.map(
+      data => data.split("").splice(11).join("")
+    )
+
+    this.setState({
+      loginUserFirstName: getNameAry[0],
+      loginUserLastName: getNameAry[1]
+    })
+    M.updateTextFields();
   }
 
   getAllUsers() {
@@ -28,6 +46,7 @@ export default class UserPage extends Component {
         return res.json();
       })
       .then(data => {
+
         this.setState({
           userData: data
         });
@@ -41,10 +60,16 @@ export default class UserPage extends Component {
         return res.json();
       })
       .then(data => {
+
         this.setState({
           passDataToEdit: data,
-          user_id: userID
-        });
+          user_id: userID, //can not be edited
+          first_name: data[0].first_name,
+          last_name: data[0].last_name,
+          password: data[0].password,
+          email: data[0].email,
+          role: data[0].role
+        }, () => console.log(this.state));
       })
       .catch(err => console.log(`We got errors : ${err}`));
     $("#editUserModal").modal("open");
@@ -64,10 +89,11 @@ export default class UserPage extends Component {
     this.closeModal();
   }
 
-  getDeleteUser(userID) {
-    console.log(4444, userID);
+  getDeleteUser(userID, firstName, lastName) {
     this.setState({
-      deleteUserID: userID
+      deleteUserID: userID,
+      deleteUserFirstName: firstName,
+      deleteUserLastName: lastName,
     });
     $("#deleteUserModal").modal("open");
   }
@@ -86,7 +112,7 @@ export default class UserPage extends Component {
   }
 
   testing() {
-    console.log(this.state);
+    $("#testingModal").modal("open")
   }
 
   closeModal() {
@@ -97,11 +123,7 @@ export default class UserPage extends Component {
   }
 
   render() {
-    console.log(this.state);
-    const btn = {
-      width: "100px",
-      height: "25px"
-    };
+
     const userData = this.state.userData.map(data => {
       return (
         <tr key={data.id}>
@@ -109,38 +131,42 @@ export default class UserPage extends Component {
           <td>{data.first_name}</td>
           <td>{data.last_name}</td>
           <td>{data.email}</td>
-          <td>{data.is_manager}</td>
+          <td>{data.role === "1" ? "Admin" : "User"}</td>
           <td>{data.created_time}</td>
           <td>{data.updated_time}</td>
-          <td>
-            <Button
-              onClick={() => this.getEditUser(data.id)}
-              className="yellow darken-2 editBtn"
-              waves="light"
-            >
-              Edit
+          <td className="tdEditDelete">
+            <div>
+              <Button
+                onClick={() => this.getEditUser(data.id)}
+                className="yellow darken-2 editBtn"
+                waves="light"
+              >
+                Edit
             </Button>
-            <Button
-              onClick={() => this.getDeleteUser(data.id)}
-              className="red darken-2 editBtn"
-              waves="light"
-            >
-              Delete
+              <Button
+                onClick={() => this.getDeleteUser(data.id, data.first_name, data.last_name)}
+                className="red darken-2 deleteBtn"
+                waves="light"
+              >
+                Delete
             </Button>
+            </div>
           </td>
         </tr>
       );
     });
+
+
     return (
       <div className="userPageBlock">
-        <button style={btn} onClick={() => this.testing()}>
-          Test 1
-        </button>
         <div className="headerBlock">
           <div className="nameBlock">User Manager</div>
 
           <div className="avatarBlock">
-            <div className="avatarPicEle">M</div>
+            <div className="avatarPicEle">
+              {`${this.state.loginUserFirstName} 
+              ${this.state.loginUserLastName}`}
+            </div>
             <Link to="/">
               <Button className="red lighten-1 logoutEle" waves="light">
                 Logout
@@ -186,34 +212,50 @@ export default class UserPage extends Component {
           id="editUserModal"
           className="editUserModalBlock"
           actions={
-            <div className="modalBtnBlock">
-              <Button
-                onClick={() => this.closeModal()}
-                className="red darken-3"
-                waves="light"
-              >
-                Cancel
+            <div className="editModalBtnBlock">
+              <div>
+                <Button
+                  onClick={() => this.closeModal()}
+                  className="red darken-3"
+                  waves="light"
+                >
+                  Cancel
               </Button>
-              <Button
-                className="green lighten-1"
-                waves="light"
-                onClick={() => this.editUserConfirm()}
-              >
-                Confirm
+                <Button
+                  className="green lighten-1"
+                  waves="light"
+                  onClick={() => this.editUserConfirm()}
+                >
+                  Confirm
               </Button>
+              </div>
             </div>
           }
         >
-          <button style={btn} onClick={() => this.testing()}>
-            Test
-          </button>
           <Row className="editUserInputBlock">
+
+            <div className="input-field col s6">
+              <input
+                value="test"
+                id="first_name2"
+                type="text"
+                className="validate"
+                onChange={e =>
+                  this.setState({
+                    first_name: e.target.value
+                  })
+                }
+              />
+              <label className="active" htmlFor="first_name2">First Name</label>
+            </div>
+
             <Input
               className="userFirstNameInput"
-              placeholder={this.state.passDataToEdit[0].first_name}
+              // placeholder={this.state.passDataToEdit[0].first_name}
               s={6}
+              labelClassName="active"
               label="First Name"
-              defaultValue={this.state.first_name}
+              value={this.state.first_name}
               maxLength="50"
               onChange={e =>
                 this.setState({
@@ -235,6 +277,7 @@ export default class UserPage extends Component {
               }
             />
             <Input
+              type="password"
               className="userPasswordInput"
               placeholder={this.state.passDataToEdit[0].password}
               s={6}
@@ -252,49 +295,81 @@ export default class UserPage extends Component {
               placeholder={this.state.passDataToEdit[0].email}
               s={6}
               label="Email"
-              // defaultValue={this.state.email}
+              defaultValue={this.state.passDataToEdit[0].email}
               maxLength="50"
               onChange={e =>
                 this.setState({
-                  email: e.target.value
+                  email: e.target.value,
+                  passDataToEdit: [
+                    {
+                      email: e.target.value
+                    }
+                  ]
                 })
               }
             />
             <Input
               className="userIsManagerInput"
-              placeholder={this.state.passDataToEdit[0].is_manager}
+              placeholder={this.state.passDataToEdit[0].role}
               s={8}
               label="Is Manager"
-              // defaultValue={this.state.is_manager}
               maxLength="5"
               onChange={e =>
                 this.setState({
-                  is_manager: e.target.value
+                  role: e.target.value
                 })
               }
             />
+
+            <div className="input-field col s6">
+              <select
+                defaultValue=""
+                onChange={(e) =>
+                  this.setState({
+                    role: e.target.value
+                  })
+                }
+              >
+                <option value="" disabled>Choose your Role</option>
+                <option value="1">Admin</option>
+                <option value="0">User</option>
+              </select>
+              <label>Role</label>
+            </div>
+
+
           </Row>
         </Modal>
 
         {/* Delete Modal */}
-        <Modal id="deleteUserModal" className="deleteUserModalBlock" actions="">
-          <div className="modalBtnBlock">
-            <h1>Are you sure you want to delete this user data?</h1>
-            {`Delete ID => ${this.state.deleteUserID}`}
-            <Button
-              onClick={() => $("#deleteUserModal").modal("close")}
-              className="red lighten-3"
-              waves="light"
-            >
-              Cancel
+        <Modal
+          id="deleteUserModal"
+          className="deleteUserModalBlock"
+          actions="">
+          <div className="deleteModalBtnBlock">
+            <h3>Are you sure you want to delete this user data?</h3>
+            <ul>
+              <li>ID : {this.state.deleteUserID}</li>
+              <li>First Name : {this.state.deleteUserFirstName}</li>
+              <li>Last Name : {this.state.deleteUserLastName}</li>
+            </ul>
+            {/* {`Delete ID => ${this.state.deleteUserID}`} */}
+            <div>
+              <Button
+                onClick={() => $("#deleteUserModal").modal("close")}
+                className="red lighten-3"
+                waves="light"
+              >
+                Cancel
             </Button>
-            <Button
-              className="red darken-3"
-              waves="light"
-              onClick={() => this.deleteUserConfirm(this.state.deleteUserID)}
-            >
-              Delete
+              <Button
+                className="red darken-3"
+                waves="light"
+                onClick={() => this.deleteUserConfirm(this.state.deleteUserID)}
+              >
+                Delete
             </Button>
+            </div>
           </div>
         </Modal>
       </div>
