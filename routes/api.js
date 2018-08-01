@@ -122,7 +122,7 @@ router.get("/users/:id", (req, res) => {
   // });
 });
 
-// Put user API
+// Edit user API
 router.put("/users/:id", (req, res, next) => {
   // userCheck(req, res, () => {
   let db = req.con,
@@ -131,7 +131,7 @@ router.put("/users/:id", (req, res, next) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    is_manager = jsonData.is_manager,
+    role = jsonData.role,
     sql = `
         UPDATE
           users
@@ -140,7 +140,7 @@ router.put("/users/:id", (req, res, next) => {
           last_name = '${last_name}',
           password = '${password}',
           email ='${email}',
-          is_manager = ${is_manager}
+          role = ${role}
         WHERE
           id = ${req.params.id};
       `;

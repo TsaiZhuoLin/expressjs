@@ -15,7 +15,11 @@ export default class AddUserModal extends Component {
     };
   }
 
-
+  componentDidMount() {
+    $(document).ready(function () {
+      $('select').formSelect();
+    });
+  }
 
   addNewUser() {
     let newUserData = this.state;
@@ -30,6 +34,7 @@ export default class AddUserModal extends Component {
       .catch(err => console.log(`We got errors : ${err}`));
     this.closeModal();
     this.getAllUsers();
+    window.location.reload();
   }
 
   getAllUsers() {
@@ -134,7 +139,7 @@ export default class AddUserModal extends Component {
                 <option value="1">Admin</option>
                 <option value="0">User</option>
               </select>
-              <label>Role</label>
+              <label htmlFor="createUser">Role</label>
             </div>
 
           </div>
@@ -147,7 +152,7 @@ export default class AddUserModal extends Component {
                 waves="light"
               >
                 Cancel
-                </Button>
+              </Button>
               <Button
                 type="submit"
                 className="green lighten-1"

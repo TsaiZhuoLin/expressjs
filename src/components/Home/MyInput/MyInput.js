@@ -27,6 +27,10 @@ class MyInput extends Component {
 
   signInBtnClick() {
     let userLoginData = this.state;
+    if (userLoginData.user_id.length === 0) return alert("Please enter your ID!")
+
+    if (userLoginData.user_pw.length === 0) return alert("Please enter your password!")
+
     fetch("http://localhost:3000/auth/login", {
       method: "POST",
       body: JSON.stringify(userLoginData),
@@ -43,8 +47,6 @@ class MyInput extends Component {
         }
         //login successful status 200
         if (res.status == 200) {
-          //console.log(333, document.cookie);
-          console.log(555, res)
           this.props.history.push("/UserPage");
         }
       })

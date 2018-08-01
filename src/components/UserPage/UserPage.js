@@ -6,7 +6,11 @@ import { Button, Table, Modal, Row, Input } from "react-materialize";
 import { Link } from "react-router-dom";
 import AddUserModal from "./Modals/AddUserModal";
 
+
+
+
 export default class UserPage extends Component {
+
   constructor(props) {
     super(props);
     this.state = {
@@ -34,7 +38,11 @@ export default class UserPage extends Component {
       loginUserFirstName: getNameAry[0],
       loginUserLastName: getNameAry[1]
     })
-    M.updateTextFields();
+
+    $(document).ready(function () {
+      $('select').formSelect();
+      M.updateTextFields();
+    });
   }
 
   getAllUsers() {
@@ -46,7 +54,6 @@ export default class UserPage extends Component {
         return res.json();
       })
       .then(data => {
-
         this.setState({
           userData: data
         });
@@ -69,7 +76,7 @@ export default class UserPage extends Component {
           password: data[0].password,
           email: data[0].email,
           role: data[0].role
-        }, () => console.log(this.state));
+        });
       })
       .catch(err => console.log(`We got errors : ${err}`));
     $("#editUserModal").modal("open");
@@ -87,6 +94,7 @@ export default class UserPage extends Component {
       .then(res => console.log(res))
       .catch(err => console.log(`We got errors : ${err}`));
     this.closeModal();
+    window.location.reload();
   }
 
   getDeleteUser(userID, firstName, lastName) {
@@ -109,10 +117,13 @@ export default class UserPage extends Component {
       .then(res => console.log(res))
       .catch(err => console.log(`We got errors : ${err}`));
     this.closeModal();
+    window.location.reload();
   }
 
-  testing() {
-    $("#testingModal").modal("open")
+  userLogout() {
+    fetch('http://localhost:3000/auth/logout')
+      .then(res => console.log(res))
+      .catch(err => console.log(`We got errors : ${err}`));
   }
 
   closeModal() {
@@ -123,7 +134,6 @@ export default class UserPage extends Component {
   }
 
   render() {
-
     const userData = this.state.userData.map(data => {
       return (
         <tr key={data.id}>
@@ -167,11 +177,9 @@ export default class UserPage extends Component {
               {`${this.state.loginUserFirstName} 
               ${this.state.loginUserLastName}`}
             </div>
-            <Link to="/">
-              <Button className="red lighten-1 logoutEle" waves="light">
-                Logout
+            <Button className="red lighten-1 logoutEle" waves="light" onClick={() => this.userLogout()}>
+              Logout
               </Button>
-            </Link>
           </div>
         </div>
 
@@ -233,108 +241,78 @@ export default class UserPage extends Component {
           }
         >
           <Row className="editUserInputBlock">
-
             <div className="input-field col s6">
+              <h6>First Name</h6>
               <input
-                value="test"
-                id="first_name2"
-                type="text"
-                className="validate"
+                id="first_name"
+                className="userFirstNameInput"
+                value={this.state.first_name}
                 onChange={e =>
                   this.setState({
                     first_name: e.target.value
                   })
                 }
               />
-              <label className="active" htmlFor="first_name2">First Name</label>
             </div>
 
-            <Input
-              className="userFirstNameInput"
-              // placeholder={this.state.passDataToEdit[0].first_name}
-              s={6}
-              labelClassName="active"
-              label="First Name"
-              value={this.state.first_name}
-              maxLength="50"
-              onChange={e =>
-                this.setState({
-                  first_name: e.target.value
-                })
-              }
-            />
-            <Input
-              className="userLastNameInput"
-              placeholder={this.state.passDataToEdit[0].last_name}
-              s={6}
-              label="Last Name"
-              // defaultValue={this.state.last_name}
-              maxLength="50"
-              onChange={e =>
-                this.setState({
-                  last_name: e.target.value
-                })
-              }
-            />
-            <Input
-              type="password"
-              className="userPasswordInput"
-              placeholder={this.state.passDataToEdit[0].password}
-              s={6}
-              label="Password"
-              // defaultValue={this.state.password}
-              maxLength="50"
-              onChange={e =>
-                this.setState({
-                  password: e.target.value
-                })
-              }
-            />
-            <Input
-              className="userEmailInput"
-              placeholder={this.state.passDataToEdit[0].email}
-              s={6}
-              label="Email"
-              defaultValue={this.state.passDataToEdit[0].email}
-              maxLength="50"
-              onChange={e =>
-                this.setState({
-                  email: e.target.value,
-                  passDataToEdit: [
-                    {
-                      email: e.target.value
-                    }
-                  ]
-                })
-              }
-            />
-            <Input
-              className="userIsManagerInput"
-              placeholder={this.state.passDataToEdit[0].role}
-              s={8}
-              label="Is Manager"
-              maxLength="5"
-              onChange={e =>
-                this.setState({
-                  role: e.target.value
-                })
-              }
-            />
+            <div className="input-field col s6">
+              <h6>Last Name</h6>
+              <input
+                id="last_name"
+                className="userLastNameInput"
+                value={this.state.last_name}
+                onChange={e =>
+                  this.setState({
+                    last_name: e.target.value
+                  })
+                }
+              />
+            </div>
 
             <div className="input-field col s6">
+              <h6>Password</h6>
+              <input
+                type="password"
+                id="password"
+                className="userPasswordInput"
+                value={this.state.password}
+                onChange={e =>
+                  this.setState({
+                    password: e.target.value
+                  })
+                }
+              />
+            </div>
+
+            <div className="input-field col s6">
+              <h6>Email</h6>
+              <input
+                type="email"
+                id="email"
+                className="userEmailInput"
+                value={this.state.email}
+                onChange={e =>
+                  this.setState({
+                    email: e.target.value
+                  })
+                }
+              />
+            </div>
+
+            <div className="input-field col s6">
+              <h6>Role</h6>
               <select
-                defaultValue=""
+                value=""
                 onChange={(e) =>
                   this.setState({
                     role: e.target.value
                   })
                 }
               >
-                <option value="" disabled>Choose your Role</option>
+                <option value="" disabled>Edit your role</option>
                 <option value="1">Admin</option>
                 <option value="0">User</option>
               </select>
-              <label>Role</label>
             </div>
 
 
