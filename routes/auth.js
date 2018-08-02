@@ -32,15 +32,16 @@ router.post("/login", (req, res) => {
       res.status(401).end();
       return;
     }
-    res.cookie("userName", `${results[0].first_name} ${results[0].last_name}`);
+    res.cookie("user_name", `${results[0].first_name}_${results[0].last_name}`);
     res.send("You have logined!");
   });
 });
 
 // Logout API
 router.get("/logout", (req, res) => {
-  res.clearCookie("first_name", { path: "/" });
-  res.clearCookie("last_name", { path: "/" });
+  // res.clearCookie("first_name", { path: "/" });
+  // res.clearCookie("last_name", { path: "/" });
+  res.clearCookie("user_name");
   res.send("User cookie delete!");
 });
 

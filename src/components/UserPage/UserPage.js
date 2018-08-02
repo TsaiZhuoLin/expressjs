@@ -1,13 +1,10 @@
 import React, { Component } from "react";
 import "./userPage.scss";
-
 import { Button, Table, Modal, Row, Input } from "react-materialize";
-
-import { Link } from "react-router-dom";
 import AddUserModal from "./Modals/AddUserModal";
 
-
-
+const apiURL = "http://localhost:3000/api/users/";
+const logoutURL = "http://localhost:3000/auth/logout";
 
 export default class UserPage extends Component {
 
@@ -15,9 +12,7 @@ export default class UserPage extends Component {
     super(props);
     this.state = {
       userData: [],
-      passDataToEdit: [{}],
-      loginUserFirstName: "",
-      loginUserLastName: "",
+      loginUserName: "",
       first_name: "",
       last_name: "",
       password: "",
@@ -28,15 +23,12 @@ export default class UserPage extends Component {
 
   componentDidMount() {
     this.getAllUsers();
-
     const getCookie = document.cookie.split(";");
     const getNameAry = getCookie.map(
-      data => data.split("").splice(11).join("")
-    )
-
+      data => data.split("").splice(10).join("").split("_").join(" ")
+    );
     this.setState({
-      loginUserFirstName: getNameAry[0],
-      loginUserLastName: getNameAry[1]
+      loginUserName: getNameAry
     })
 
     $(document).ready(function () {
@@ -46,13 +38,11 @@ export default class UserPage extends Component {
   }
 
   getAllUsers() {
-    fetch("http://localhost:3000/api/users", {
-      method: "GET"
-      // credentials: "include"
+    fetch(`${apiURL}`, {
+      method: "GET",
+      credentials: "include"
     })
-      .then(res => {
-        return res.json();
-      })
+      .then(res => res.json())
       .then(data => {
         this.setState({
           userData: data
@@ -62,39 +52,40 @@ export default class UserPage extends Component {
   }
 
   getEditUser(userID) {
-    fetch(`http://localhost:3000/api/users/${userID}`)
+    fetch(`${apiURL}${userID}`)
       .then(res => {
         return res.json();
       })
       .then(data => {
-
+        let getUserData = data[0];
         this.setState({
-          passDataToEdit: data,
           user_id: userID, //can not be edited
-          first_name: data[0].first_name,
-          last_name: data[0].last_name,
-          password: data[0].password,
-          email: data[0].email,
-          role: data[0].role
+          first_name: getUserData.first_name,
+          last_name: getUserData.last_name,
+          password: getUserData.password,
+          email: getUserData.email,
+          role: getUserData.role
         });
       })
+      .then(
+        $("#editUserModal").modal("open")
+      )
       .catch(err => console.log(`We got errors : ${err}`));
-    $("#editUserModal").modal("open");
+
   }
 
-  editUserConfirm() {
+  confirmEditUser() {
     let editUserData = this.state;
-    fetch(`http://localhost:3000/api/users/${editUserData.user_id}`, {
+    fetch(`${apiURL}${editUserData.user_id}`, {
       method: "PUT",
       body: JSON.stringify(editUserData),
       headers: {
         "Content-Type": "application/json"
       }
     })
-      .then(res => console.log(res))
-      .catch(err => console.log(`We got errors : ${err}`));
-    this.closeModal();
-    window.location.reload();
+      .then(this.closeModal())
+      .then(window.location.reload())
+      .catch(err => alert('Edit failed. Please try again.'));
   }
 
   getDeleteUser(userID, firstName, lastName) {
@@ -106,24 +97,38 @@ export default class UserPage extends Component {
     $("#deleteUserModal").modal("open");
   }
 
-  deleteUserConfirm(userID) {
-    fetch(`http://localhost:3000/api/users/${userID}`, {
+  confirmDeleteUser(userID) {
+    fetch(`${apiURL}${userID}`, {
       method: "DELETE",
-      // body: JSON.stringify(newUserData),
       headers: {
         "Content-Type": "application/json"
       }
     })
-      .then(res => console.log(res))
-      .catch(err => console.log(`We got errors : ${err}`));
-    this.closeModal();
-    window.location.reload();
+      .then(this.closeModal())
+      .then(window.location.reload())
+      .catch(err => alert('Delete failed. Please try again.'));
   }
 
   userLogout() {
-    fetch('http://localhost:3000/auth/logout')
-      .then(res => console.log(res))
-      .catch(err => console.log(`We got errors : ${err}`));
+    fetch(`${logoutURL}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include"
+    })
+      .then(res => {
+        // login failed status 401
+        if (res.status == 401) {
+          alert("Something went wrong! Please try again.");
+          return;
+        }
+        //login successful status 200
+        if (res.status == 200) {
+          this.props.history.push("/");
+        }
+      })
+      .catch(err => console.log(33, `We got errors : ${err}`));
   }
 
   closeModal() {
@@ -174,8 +179,7 @@ export default class UserPage extends Component {
 
           <div className="avatarBlock">
             <div className="avatarPicEle">
-              {`${this.state.loginUserFirstName} 
-              ${this.state.loginUserLastName}`}
+              {`${this.state.loginUserName}`}
             </div>
             <Button className="red lighten-1 logoutEle" waves="light" onClick={() => this.userLogout()}>
               Logout
@@ -232,7 +236,7 @@ export default class UserPage extends Component {
                 <Button
                   className="green lighten-1"
                   waves="light"
-                  onClick={() => this.editUserConfirm()}
+                  onClick={() => this.confirmEditUser()}
                 >
                   Confirm
               </Button>
@@ -343,7 +347,7 @@ export default class UserPage extends Component {
               <Button
                 className="red darken-3"
                 waves="light"
-                onClick={() => this.deleteUserConfirm(this.state.deleteUserID)}
+                onClick={() => this.confirmDeleteUser(this.state.deleteUserID)}
               >
                 Delete
             </Button>

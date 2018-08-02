@@ -4,6 +4,10 @@ import "./MyInput.scss";
 import { Row, Input, Button } from "react-materialize";
 import { withRouter } from "react-router-dom";
 
+const loginURL = "http://localhost:3000/auth/login";
+
+
+
 class MyInput extends Component {
   constructor(props) {
     super(props);
@@ -31,7 +35,7 @@ class MyInput extends Component {
 
     if (userLoginData.user_pw.length === 0) return alert("Please enter your password!")
 
-    fetch("http://localhost:3000/auth/login", {
+    fetch(`${loginURL}`, {
       method: "POST",
       body: JSON.stringify(userLoginData),
       headers: {
