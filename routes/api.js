@@ -14,7 +14,7 @@ router.get("/users", (req, res) => {
   let db = req.con,
     getAllUsers = `
         SELECT
-          id, first_name, last_name, password, email, role,
+          id, first_name, last_name, password, email,
           date_format(created_time, '%Y-%m-%d %H:%i:%s') as created_time,
           date_format(updated_time, '%Y-%m-%d %H:%i:%s') as updated_time
           
@@ -39,21 +39,18 @@ router.post("/users", (req, res) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    role = jsonData.role,
     sql = `
         INSERT INTO users (
           first_name,
           last_name,
           password,
-          email,
-          role
+          email
         )
         VALUES (
           '${first_name}',
           '${last_name}',
           '${password}',
-          '${email}',
-          '${role}'
+          '${email}'
         );
       `;
 
@@ -62,6 +59,7 @@ router.post("/users", (req, res) => {
       res.send(results);
     } else {
       res.status(400);
+      console.log(111, err)
       res.send("something is wrong!");
     }
     // errHandler(err);
@@ -131,7 +129,6 @@ router.put("/users/:id", (req, res, next) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    role = jsonData.role,
     sql = `
         UPDATE
           users
@@ -139,8 +136,7 @@ router.put("/users/:id", (req, res, next) => {
           first_name = '${first_name}',
           last_name = '${last_name}',
           password = '${password}',
-          email ='${email}',
-          role = ${role}
+          email ='${email}'
         WHERE
           id = ${req.params.id};
       `;

@@ -1,10 +1,9 @@
 import React, { Component } from "react";
 import "./userPage.scss";
 import { Button, Table, Modal, Row, Input } from "react-materialize";
-import AddUserModal from "./Modals/AddUserModal";
 
-const apiURL = "http://localhost:3000/api/users/";
-const logoutURL = "http://localhost:3000/auth/logout";
+const API_USERS_URL = "http://localhost:3000/api/users/";
+const API_LOGOUT_URL = "http://localhost:3000/auth/logout";
 
 export default class UserPage extends Component {
 
@@ -16,8 +15,11 @@ export default class UserPage extends Component {
       first_name: "",
       last_name: "",
       password: "",
+      confirmPassword: "",
       email: "",
-      role: ""
+      headerType: "",
+      isAddUserMode: true,
+      isConfirmBtnDisable: true
     };
   }
 
@@ -27,18 +29,15 @@ export default class UserPage extends Component {
     const getNameAry = getCookie.map(
       data => data.split("").splice(10).join("").split("_").join(" ")
     );
+
     this.setState({
       loginUserName: getNameAry
     })
 
-    $(document).ready(function () {
-      $('select').formSelect();
-      M.updateTextFields();
-    });
   }
 
   getAllUsers() {
-    fetch(`${apiURL}`, {
+    fetch(`${API_USERS_URL}`, {
       method: "GET",
       credentials: "include"
     })
@@ -48,35 +47,88 @@ export default class UserPage extends Component {
           userData: data
         });
       })
+      .catch(err => alert("Failed to get user data! Please try again."));
+  }
+
+
+  openUserModal(e, userID) {
+    // check modal type isAddMode = 1, isEditMode = 0
+    let checkModalType = e.target.id === "addUserBtn" ? 1 : 0;
+    let headerType = checkModalType === 1 ? "Create A New User" : "Edit User"
+
+    if (checkModalType === 0) {
+      this.getEditUser(userID)
+      this.setState({
+        editUserID: userID,
+        password: "",
+        confirmPassword: "",
+        isAddUserMode: false,
+        headerType: headerType
+      })
+    }
+
+    if (checkModalType === 1) {
+      this.setState({
+        first_name: "",
+        last_name: "",
+        password: "",
+        confirmPassword: "",
+        email: "",
+        isAddUserMode: true,
+        headerType: headerType
+      })
+    }
+    $("#userModal").modal("open");
+  }
+
+  confirmAddNewUser() {
+    let newUserData = this.state;
+    fetch(`${API_USERS_URL}`, {
+      method: "POST",
+      body: JSON.stringify(newUserData),
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+      .then(this.closeModal())
+      .then(window.location.reload())
       .catch(err => console.log(`We got errors : ${err}`));
   }
 
   getEditUser(userID) {
-    fetch(`${apiURL}${userID}`)
+    fetch(`${API_USERS_URL}${userID}`)
       .then(res => {
         return res.json();
       })
       .then(data => {
         let getUserData = data[0];
         this.setState({
-          user_id: userID, //can not be edited
+          //user_id: userID, //can not be edited
           first_name: getUserData.first_name,
           last_name: getUserData.last_name,
-          password: getUserData.password,
           email: getUserData.email,
-          role: getUserData.role
         });
       })
-      .then(
-        $("#editUserModal").modal("open")
-      )
-      .catch(err => console.log(`We got errors : ${err}`));
+      .catch(err => alert("Failed to get users! Please try again."));
+  }
 
+  confirmUserModalBtn() {
+    if (this.state.isAddUserMode) {
+      this.confirmAddNewUser()
+    } else {
+      this.confirmEditUser()
+    }
   }
 
   confirmEditUser() {
-    let editUserData = this.state;
-    fetch(`${apiURL}${editUserData.user_id}`, {
+    let { first_name, last_name, password, email } = this.state;
+    let editUserData = {
+      first_name: first_name,
+      last_name: last_name,
+      password: password,
+      email: email
+    };
+    fetch(`${API_USERS_URL}${this.state.editUserID}`, {
       method: "PUT",
       body: JSON.stringify(editUserData),
       headers: {
@@ -88,6 +140,7 @@ export default class UserPage extends Component {
       .catch(err => alert('Edit failed. Please try again.'));
   }
 
+
   getDeleteUser(userID, firstName, lastName) {
     this.setState({
       deleteUserID: userID,
@@ -98,7 +151,7 @@ export default class UserPage extends Component {
   }
 
   confirmDeleteUser(userID) {
-    fetch(`${apiURL}${userID}`, {
+    fetch(`${API_USERS_URL}${userID}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json"
@@ -110,7 +163,7 @@ export default class UserPage extends Component {
   }
 
   userLogout() {
-    fetch(`${logoutURL}`, {
+    fetch(`${API_LOGOUT_URL}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json"
@@ -128,14 +181,34 @@ export default class UserPage extends Component {
           this.props.history.push("/");
         }
       })
-      .catch(err => console.log(33, `We got errors : ${err}`));
+      .catch(err => alert("Logout failed, Please try again!"));
+  }
+
+  checkUserPassword() {
+    let getPassword = this.state.password,
+      getConfirmPassword = this.state.confirmPassword;
+
+    if (getPassword === getConfirmPassword) {
+      this.setState({
+        isConfirmBtnDisable: false
+      })
+
+    } else {
+      this.setState({
+        isConfirmBtnDisable: true
+      })
+    }
+
+    if (getPassword === "" || getConfirmPassword === "") {
+      this.setState({
+        isConfirmBtnDisable: true
+      })
+    }
   }
 
   closeModal() {
     $(".input-field > input").val("");
-    $("#addUserModal").modal("close");
-    $("#editUserModal").modal("close");
-    $("#deleteUserModal").modal("close");
+    $("#userModal").modal("close");
   }
 
   render() {
@@ -146,21 +219,24 @@ export default class UserPage extends Component {
           <td>{data.first_name}</td>
           <td>{data.last_name}</td>
           <td>{data.email}</td>
-          <td>{data.role === "1" ? "Admin" : "User"}</td>
           <td>{data.created_time}</td>
           <td>{data.updated_time}</td>
           <td className="tdEditDelete">
             <div>
               <Button
-                onClick={() => this.getEditUser(data.id)}
-                className="yellow darken-2 editBtn"
+                id="editBtn"
+                onClick={(e) => {
+                  this.openUserModal(e, data.id);
+                }}
+                className="yellow darken-2"
                 waves="light"
               >
                 Edit
             </Button>
               <Button
+                id="deleteBtn"
                 onClick={() => this.getDeleteUser(data.id, data.first_name, data.last_name)}
-                className="red darken-2 deleteBtn"
+                className="red darken-2"
                 waves="light"
               >
                 Delete
@@ -170,7 +246,6 @@ export default class UserPage extends Component {
         </tr>
       );
     });
-
 
     return (
       <div className="userPageBlock">
@@ -190,8 +265,11 @@ export default class UserPage extends Component {
         <div className="userPageContentBlock">
           <div className="upperBlock">
             <Button
-              onClick={() => $("#addUserModal").modal("open")}
-              className="green lighten-1 addUserBtn"
+              id="addUserBtn"
+              onClick={(e) => {
+                this.openUserModal(e);
+              }}
+              className="green lighten-1"
               waves="light"
             >
               Add
@@ -205,7 +283,6 @@ export default class UserPage extends Component {
                   <th data-field="first_name">First Name</th>
                   <th data-field="last_name">Last Name</th>
                   <th data-field="Email">Email</th>
-                  <th data-field="is_manager">Role</th>
                   <th data-field="created_time">Created Time</th>
                   <th data-field="updated_time">Updated Time</th>
                   <th data-field="updater">Edit&Delete</th>
@@ -215,15 +292,96 @@ export default class UserPage extends Component {
               <tbody>{userData}</tbody>
             </Table>
           </div>
-
-          <AddUserModal />
         </div>
 
-        {/* Edit User Modal */}
+        {/* User Modal */}
         <Modal
-          id="editUserModal"
-          className="editUserModalBlock"
-          actions={
+          id="userModal"
+          className="userModalBlock"
+          actions={""}
+          header={this.state.headerType}
+        >
+          <Row className="editUserInputBlock">
+            <div className="inputFieldWrapper">
+
+              <Input
+                type="text"
+                className="userFirstNameInput"
+                placeholder="First Name..."
+                s={6}
+                label="First Name"
+                labelClassName="active"
+                value={this.state.first_name}
+                maxLength="50"
+                onChange={e =>
+                  this.setState({
+                    first_name: e.target.value
+                  })
+                }
+              />
+
+              <Input
+                type="text"
+                className="userLastNameInput"
+                placeholder="Last Name..."
+                s={6}
+                label="Last Name"
+                value={this.state.last_name}
+                maxLength="50"
+                onChange={e =>
+                  this.setState({
+                    last_name: e.target.value
+                  })
+                }
+              />
+
+              <Input
+                type="password"
+                className="userPasswordInput"
+                placeholder="Password..."
+                s={6}
+                label="Password"
+                value={this.state.password}
+                maxLength="50"
+                onChange={e => {
+                  this.setState({
+                    password: e.target.value
+                  }, () => this.checkUserPassword())
+                }}
+              />
+
+              <Input
+                type="password"
+                className="userConfirmPasswordInput"
+                placeholder="Confirm Password..."
+                s={6}
+                label="Confirm Password"
+                value={this.state.confirmPassword}
+                maxLength="50"
+                onChange={e => {
+                  this.setState({
+                    confirmPassword: e.target.value
+                  }, () => this.checkUserPassword())
+                }}
+              />
+
+              <Input
+                type="email"
+                validate
+                className="userEmailInput"
+                placeholder="Email..."
+                s={12}
+                label="Email"
+                value={this.state.email}
+                maxLength="50"
+                onChange={e =>
+                  this.setState({
+                    email: e.target.value
+                  })
+                }
+              />
+            </div>
+
             <div className="editModalBtnBlock">
               <div>
                 <Button
@@ -234,91 +392,15 @@ export default class UserPage extends Component {
                   Cancel
               </Button>
                 <Button
+                  disabled={this.state.isConfirmBtnDisable}
                   className="green lighten-1"
                   waves="light"
-                  onClick={() => this.confirmEditUser()}
+                  onClick={() => this.confirmUserModalBtn()}
                 >
                   Confirm
               </Button>
               </div>
             </div>
-          }
-        >
-          <Row className="editUserInputBlock">
-            <div className="input-field col s6">
-              <h6>First Name</h6>
-              <input
-                id="first_name"
-                className="userFirstNameInput"
-                value={this.state.first_name}
-                onChange={e =>
-                  this.setState({
-                    first_name: e.target.value
-                  })
-                }
-              />
-            </div>
-
-            <div className="input-field col s6">
-              <h6>Last Name</h6>
-              <input
-                id="last_name"
-                className="userLastNameInput"
-                value={this.state.last_name}
-                onChange={e =>
-                  this.setState({
-                    last_name: e.target.value
-                  })
-                }
-              />
-            </div>
-
-            <div className="input-field col s6">
-              <h6>Password</h6>
-              <input
-                type="password"
-                id="password"
-                className="userPasswordInput"
-                value={this.state.password}
-                onChange={e =>
-                  this.setState({
-                    password: e.target.value
-                  })
-                }
-              />
-            </div>
-
-            <div className="input-field col s6">
-              <h6>Email</h6>
-              <input
-                type="email"
-                id="email"
-                className="userEmailInput"
-                value={this.state.email}
-                onChange={e =>
-                  this.setState({
-                    email: e.target.value
-                  })
-                }
-              />
-            </div>
-
-            <div className="input-field col s6">
-              <h6>Role</h6>
-              <select
-                value=""
-                onChange={(e) =>
-                  this.setState({
-                    role: e.target.value
-                  })
-                }
-              >
-                <option value="" disabled>Edit your role</option>
-                <option value="1">Admin</option>
-                <option value="0">User</option>
-              </select>
-            </div>
-
 
           </Row>
         </Modal>
@@ -347,14 +429,15 @@ export default class UserPage extends Component {
               <Button
                 className="red darken-3"
                 waves="light"
-                onClick={() => this.confirmDeleteUser(this.state.deleteUserID)}
+                onClick={() =>
+                  this.confirmDeleteUser(this.state.deleteUserID)}
               >
                 Delete
             </Button>
             </div>
           </div>
         </Modal>
-      </div>
+      </div >
     );
   }
 }
