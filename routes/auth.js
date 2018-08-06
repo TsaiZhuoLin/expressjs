@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const crypto = require('crypto');
 
 /* GET users listing. */
 // router.get("/", (req, res) => {
@@ -8,19 +9,22 @@ const router = express.Router();
 
 // Login API
 router.post("/login", (req, res) => {
-  let db = req.con;
-  let jsonData = req.body;
-  let getID = jsonData.user_id;
-  let getPW = jsonData.user_pw;
-
-  let sql = `
+  let db = req.con,
+    jsonData = req.body,
+    getID = jsonData.user_id,
+    getPW = jsonData.user_pw,
+    secret = 'a1b2c3',
+    hash = crypto.createHmac('sha224', secret)
+      .update(getPW)
+      .digest('hex'),
+    sql = `
     SELECT
       id, COUNT(*) as total, first_name, last_name
     FROM
       users
     WHERE
       first_name = '${getID}'
-      AND  password = '${getPW}'
+      AND  password = '${hash}'
     GROUP BY
       id;
   `;

@@ -1,10 +1,6 @@
 const express = require("express");
 const router = express.Router();
-
-/* GET users listing. */
-// router.get("/", function(req, res) {
-//   res.send("default api route");
-// });
+const crypto = require('crypto');
 
 /* GET users API listing. */
 router.get("/users", (req, res) => {
@@ -39,6 +35,11 @@ router.post("/users", (req, res) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
+    secret = 'a1b2c3',
+    hash = crypto.createHmac('sha224', secret)
+      .update(password)
+      .digest('hex'),
+
     sql = `
         INSERT INTO users (
           first_name,
@@ -49,7 +50,7 @@ router.post("/users", (req, res) => {
         VALUES (
           '${first_name}',
           '${last_name}',
-          '${password}',
+          '${hash}', 
           '${email}'
         );
       `;
@@ -129,13 +130,18 @@ router.put("/users/:id", (req, res, next) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
+    secret = 'a1b2c3',
+    hash = crypto.createHmac('sha224', secret)
+      .update(password)
+      .digest('hex'),
+
     sql = `
         UPDATE
           users
         SET
           first_name = '${first_name}',
           last_name = '${last_name}',
-          password = '${password}',
+          password = '${hash}',
           email ='${email}'
         WHERE
           id = ${req.params.id};
