@@ -10,7 +10,7 @@ router.get("/users", (req, res) => {
   let db = req.con,
     getAllUsers = `
         SELECT
-          id, first_name, last_name, password, email,
+          id, first_name, last_name, email,
           date_format(created_time, '%Y-%m-%d %H:%i:%s') as created_time,
           date_format(updated_time, '%Y-%m-%d %H:%i:%s') as updated_time
           
@@ -35,10 +35,6 @@ router.post("/users", (req, res) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    secret = 'a1b2c3',
-    hash = crypto.createHmac('sha224', secret)
-      .update(password)
-      .digest('hex'),
 
     sql = `
         INSERT INTO users (
@@ -50,7 +46,7 @@ router.post("/users", (req, res) => {
         VALUES (
           '${first_name}',
           '${last_name}',
-          '${hash}', 
+          MD5('${password}'),
           '${email}'
         );
       `;
@@ -97,7 +93,7 @@ router.patch("/users/:id", (req, res) => {
   });
 });
 
-/* GET users API listing. */
+/* GET one user API listing. */
 router.get("/users/:id", (req, res) => {
   // Here to check login
   // userCheck(req, res, () => {
@@ -130,18 +126,13 @@ router.put("/users/:id", (req, res, next) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    secret = 'a1b2c3',
-    hash = crypto.createHmac('sha224', secret)
-      .update(password)
-      .digest('hex'),
-
     sql = `
         UPDATE
           users
         SET
           first_name = '${first_name}',
           last_name = '${last_name}',
-          password = '${hash}',
+          password = MD5('${password}'),
           email ='${email}'
         WHERE
           id = ${req.params.id};
