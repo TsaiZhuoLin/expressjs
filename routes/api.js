@@ -126,7 +126,7 @@ router.put("/users/:id", (req, res, next) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    sql = `
+    sqlWithPW = `
         UPDATE
           users
         SET
@@ -136,12 +136,24 @@ router.put("/users/:id", (req, res, next) => {
           email ='${email}'
         WHERE
           id = ${req.params.id};
-      `;
+      `,
+    sqlWithoutPW = `
+        UPDATE
+          users
+        SET
+          first_name = '${first_name}',
+          last_name = '${last_name}',
+          email ='${email}'
+        WHERE
+          id = ${req.params.id};
+      `,
+    sql = password === undefined ? sqlWithoutPW : sqlWithPW;
 
   db.query(sql, err => {
     errHandler(err);
     res.send("User data has been updated too");
   });
+
   // });
 });
 
