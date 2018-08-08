@@ -19,7 +19,9 @@ export default class UserPage extends Component {
       email: "",
       headerType: "",
       isAddUserMode: true,
-      isConfirmBtnDisable: true
+      isConfirmBtnDisable: true,
+      isRequired: false
+
     };
   }
 
@@ -82,17 +84,37 @@ export default class UserPage extends Component {
   }
 
   confirmAddNewUser() {
-    let newUserData = this.state;
-    fetch(`${API_USERS_URL}`, {
-      method: "POST",
-      body: JSON.stringify(newUserData),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(this.closeModal())
-      .then(window.location.reload())
-      .catch(err => console.log(`We got errors : ${err}`));
+    const {
+      first_name,
+      last_name,
+      password,
+      confirmPassword,
+      email
+    } = this.state;
+
+    if (first_name === "" || last_name === "" ||
+      password === "" || confirmPassword === "" || email === "") {
+      alert("Input with * is required")
+      return
+    }
+
+    if (password === confirmPassword) {
+      let newUserData = this.state;
+      fetch(`${API_USERS_URL}`, {
+        method: "POST",
+        body: JSON.stringify(newUserData),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      })
+        .then(this.closeModal())
+        .then(window.location.reload())
+        .catch(err => console.log(`We got errors : ${err}`));
+    } else {
+      alert("Please confirm your passwords!")
+    }
+
+
   }
 
   getEditUser(userID) {
@@ -107,6 +129,8 @@ export default class UserPage extends Component {
           first_name: getUserData.first_name,
           last_name: getUserData.last_name,
           email: getUserData.email,
+          password: getUserData.password,
+          prevPassword: getUserData.password
         });
       })
       .catch(err => alert("Failed to get users! Please try again."));
@@ -121,13 +145,45 @@ export default class UserPage extends Component {
   }
 
   confirmEditUser() {
-    let { first_name, last_name, password, email } = this.state;
-    let editUserData = {
+
+    if (first_name === "" || last_name === "" || email === "") {
+      alert("Input with * is required")
+      return
+    }
+
+    let {
+      first_name,
+      last_name,
+      password,
+      email,
+      prevPassword
+    } = this.state;
+
+    let withoutPassword = {
+      first_name: first_name,
+      last_name: last_name,
+      email: email,
+      isPasswordEdit: false
+    }
+
+    let withPassword = {
       first_name: first_name,
       last_name: last_name,
       password: password,
-      email: email
+      email: email,
+      isPasswordEdit: true
     };
+
+    let editUserData = prevPassword === password ? withoutPassword : withPassword;
+
+    if (editUserData.isPasswordEdit) {
+      let { password, confirmPassword } = this.state;
+      if (password !== confirmPassword) {
+        alert("Please confirm your passwords!")
+        return
+      }
+    }
+
     fetch(`${API_USERS_URL}${this.state.editUserID}`, {
       method: "PUT",
       body: JSON.stringify(editUserData),
@@ -212,6 +268,7 @@ export default class UserPage extends Component {
   }
 
   render() {
+
     const userData = this.state.userData.map(data => {
       return (
         <tr key={data.id}>
@@ -232,7 +289,7 @@ export default class UserPage extends Component {
                 waves="light"
               >
                 Edit
-            </Button>
+              </Button>
               <Button
                 id="deleteBtn"
                 onClick={() => this.getDeleteUser(data.id, data.first_name, data.last_name)}
@@ -254,7 +311,7 @@ export default class UserPage extends Component {
 
           <div className="avatarBlock">
             <div className="avatarPicEle">
-              {`${this.state.loginUserName}`}
+              {this.state.loginUserName}
             </div>
             <Button className="red lighten-1 logoutEle" waves="light" onClick={() => this.userLogout()}>
               Logout
@@ -303,15 +360,15 @@ export default class UserPage extends Component {
         >
           <Row className="editUserInputBlock">
             <div className="inputFieldWrapper">
-
               <Input
                 type="text"
                 className="userFirstNameInput"
                 placeholder="First Name..."
                 s={6}
-                label="First Name"
+                label="First Name *"
                 labelClassName="active"
                 value={this.state.first_name}
+                validate
                 maxLength="50"
                 onChange={e =>
                   this.setState({
@@ -325,7 +382,7 @@ export default class UserPage extends Component {
                 className="userLastNameInput"
                 placeholder="Last Name..."
                 s={6}
-                label="Last Name"
+                label="Last Name *"
                 value={this.state.last_name}
                 maxLength="50"
                 onChange={e =>
@@ -340,7 +397,11 @@ export default class UserPage extends Component {
                 className="userPasswordInput"
                 placeholder="Password..."
                 s={6}
-                label="Password"
+                label={
+                  this.state.isAddUserMode
+                    ? "Password *"
+                    : "Password "
+                }
                 value={this.state.password}
                 maxLength="50"
                 onChange={e => {
@@ -355,7 +416,11 @@ export default class UserPage extends Component {
                 className="userConfirmPasswordInput"
                 placeholder="Confirm Password..."
                 s={6}
-                label="Confirm Password"
+                label={
+                  this.state.isAddUserMode
+                    ? "Confirm Password *"
+                    : "Confirm Password "
+                }
                 value={this.state.confirmPassword}
                 maxLength="50"
                 onChange={e => {
@@ -371,7 +436,7 @@ export default class UserPage extends Component {
                 className="userEmailInput"
                 placeholder="Email..."
                 s={12}
-                label="Email"
+                label="Email *"
                 value={this.state.email}
                 maxLength="50"
                 onChange={e =>
@@ -381,7 +446,6 @@ export default class UserPage extends Component {
                 }
               />
             </div>
-
             <div className="editModalBtnBlock">
               <div>
                 <Button
@@ -392,7 +456,7 @@ export default class UserPage extends Component {
                   Cancel
               </Button>
                 <Button
-                  disabled={this.state.isConfirmBtnDisable}
+                  disabled={false}
                   className="green lighten-1"
                   waves="light"
                   onClick={() => this.confirmUserModalBtn()}
