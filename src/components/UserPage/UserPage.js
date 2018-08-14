@@ -7,8 +7,109 @@ import TableContent from './TableContent';
 const API_USERS_URL = "http://localhost:3000/api/users/";
 const API_LOGOUT_URL = "http://localhost:3000/auth/logout";
 
-export default class UserPage extends Component {
+function UserInputForModal({ userInputProperty, closeModal }) {
+  return (
+    <Row className="editUserInputBlock">
+      <div className="inputFieldWrapper">
+        {
+          Object.keys(userInputProperty).map(data => {
+            let getInputProps = userInputProperty[data];
+            return (
+              <Input
+                key={getInputProps.label}
+                type={getInputProps.type}
+                className={getInputProps.className}
+                placeholder={getInputProps.placeholder}
+                s={getInputProps.s}
+                label={getInputProps.label}
+                value={getInputProps.value}
+                maxLength={getInputProps.maxLength}
+                onChange={(e) => getInputProps.onChange(e, data)}
+              />
+            )
+          })
+        }
+      </div>
+      <div className="editModalBtnBlock">
+        <div>
+          <Button
+            onClick={() => closeModal()}
+            className="red darken-3"
+            waves="light"
+          >
+            Cancel
+          </Button>
+          <Button
+            disabled={false}
+            className="green lighten-1"
+            waves="light"
+            onClick={() => this.confirmUserModalBtn()}
+          >
+            Confirm
+          </Button>
+        </div>
+      </div>
+    </Row>
+  )
+}
 
+function UserDataTable({ data, openUserModal, deleteUserModal }) {
+  return (
+    <Table centered={true}>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email</th>
+          <th>Created Time</th>
+          <th>Updated Time</th>
+          <th>Edit&Delete</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map(({ id, first_name, last_name, email, created_time, updated_time }) => {
+          return (
+            <tr key={id}>
+              <td>{id}</td>
+              <td>{first_name}</td>
+              <td>{last_name}</td>
+              <td>{email}</td>
+              <td>{created_time}</td>
+              <td>{updated_time}</td>
+              <td className="tdEditDelete">
+                <div>
+                  <Button
+                    id="editBtn"
+                    onClick={(e) => openUserModal(e, id)}
+                    className="yellow darken-2"
+                    waves="light"
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    id="deleteBtn"
+                    onClick={() =>
+                      deleteUserModal(id, first_name, last_name)
+                    }
+
+                    className="red darken-2"
+                    waves="light"
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </td>
+            </tr>
+          );
+        }) // eof return
+        }
+      </tbody>
+    </Table>
+  )
+};
+
+export default class UserPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -23,37 +124,7 @@ export default class UserPage extends Component {
       isAddUserMode: true,
       isConfirmBtnDisable: true,
       isRequired: false,
-      userInputProperty: [
-        {
-          first_name: {
-            type: 'text',
-            className: 'userFirstNameInput',
-            placeholder: 'First Name...',
-            s: 6,
-            label: 'First Name *',
-            labelClassName: 'active',
-            value: '',
-            maxLength: 50,
-            onChange: ''
-          }
-        },
-        {
-          last_name: {
-            type: 'text',
-            className: 'userLastNameInput',
-            placeholder: 'Last Name...',
-            s: 6,
-            label: 'Last Name *',
-            value: '',
-            maxLength: 50,
-            onChange: (e) => {
-              this.setState({
-                last_name: e.target.value
-              })
-            }
-          }
-        }
-      ]
+      userInputProperty: []
     };
   }
 
@@ -85,8 +156,6 @@ export default class UserPage extends Component {
   }
 
   getEditUser(userID) {
-    console.log(123, userID)
-
     fetch(`${API_USERS_URL}${userID}`)
       .then(res => {
         return res.json();
@@ -101,8 +170,49 @@ export default class UserPage extends Component {
           password: getUserData.password,
           prevPassword: getUserData.password
         });
+        return data;
+      })
+      .then(data => {
+        this.setState({
+          userInputProperty: {
+            first_name: {
+              type: 'text',
+              className: 'first_name userFirstNameInput',
+              placeholder: 'First Name...',
+              s: 6,
+              label: 'First Name *',
+              value: this.state.first_name,
+              maxLength: 50,
+              onChange: e => this.inputChange(e, data)
+            },
+            last_name: {
+              type: 'text',
+              className: 'last_name userLastNameInput',
+              placeholder: 'Last Name...',
+              s: 6,
+              label: 'Last Name *',
+              value: this.state.last_name,
+              maxLength: 50,
+              onChange: e => this.inputChange(e, data)
+            }
+          }
+        })
       })
       .catch(err => alert("Failed to get users! Please try again."));
+  }
+
+  inputChange(e, data) {
+    // console.log(222, data)
+    console.log(333, e.target.classList[0])
+    let getChangeInput = [e.target.classList[0]];
+    this.setState((prevState, props) => ({
+      getChangeInput: e.target.value,
+      userInputProperty: {
+        getChangeInput: {
+          value: this.state.getChangeInput
+        }
+      }
+    }))
   }
 
 
@@ -112,18 +222,14 @@ export default class UserPage extends Component {
     let headerType = checkModalType === 1 ? "Create A New User" : "Edit User"
 
     if (checkModalType === 0) {
-
-      console.log(123123, headerType);
-      console.log(this);
       this.getEditUser(userID)
-
-      // this.setState({
-      //   editUserID: userID,
-      //   password: "",
-      //   confirmPassword: "",
-      //   isAddUserMode: false,
-      //   headerType: headerType
-      // })
+      this.setState({
+        editUserID: userID,
+        password: "",
+        confirmPassword: "",
+        isAddUserMode: false,
+        headerType: headerType
+      })
     }
 
     if (checkModalType === 1) {
@@ -166,12 +272,10 @@ export default class UserPage extends Component {
       })
         .then(this.closeModal())
         .then(window.location.reload())
-        .catch(err => console.log(`We got errors : ${err}`));
+        .catch(err => console.log(`We got errors: ${err}`));
     } else {
       alert("Please confirm your passwords!")
     }
-
-
   }
 
 
@@ -316,139 +420,9 @@ export default class UserPage extends Component {
     $("#userModal").modal("close");
   }
 
-  userInputForModal(props) {
-    return (
-      <Row className="editUserInputBlock">
-        <div className="inputFieldWrapper">
-          {props.userInputProperty.map(obj => (
-            <Input
-              type={obj}
-              className="userFirstNameInput"
-              placeholder="First Name..."
-              s={6}
-              label="First Name *"
-              labelClassName="active"
-              value={this.state.first_name}
-              maxLength="50"
-              onChange={e =>
-                this.setState({
-                  first_name: e.target.value
-                })
-              }
-            />
-          ))}
-          <Input
-            type="text"
-            className="userFirstNameInput"
-            placeholder="First Name..."
-            s={6}
-            label="First Name *"
-            labelClassName="active"
-            value={this.state.first_name}
-            maxLength="50"
-            onChange={e =>
-              this.setState({
-                first_name: e.target.value
-              })
-            }
-          />
-
-          <Input
-            type="text"
-            className="userLastNameInput"
-            placeholder="Last Name..."
-            s={6}
-            label="Last Name *"
-            value={this.state.last_name}
-            maxLength="50"
-            onChange={e =>
-              this.setState({
-                last_name: e.target.value
-              })
-            }
-          />
-
-          <Input
-            type="password"
-            className="userPasswordInput"
-            placeholder="Password..."
-            s={6}
-            label={
-              this.state.isAddUserMode
-                ? "Password *"
-                : "Password "
-            }
-            value={this.state.password}
-            maxLength="50"
-            onChange={e => {
-              this.setState({
-                password: e.target.value
-              }, () => this.checkUserPassword())
-            }}
-          />
-
-          <Input
-            type="password"
-            className="userConfirmPasswordInput"
-            placeholder="Confirm Password..."
-            s={6}
-            label={
-              this.state.isAddUserMode
-                ? "Confirm Password *"
-                : "Confirm Password "
-            }
-            value={this.state.confirmPassword}
-            maxLength="50"
-            onChange={e => {
-              this.setState({
-                confirmPassword: e.target.value
-              }, () => this.checkUserPassword())
-            }}
-          />
-
-          <Input
-            type="email"
-            validate
-            className="userEmailInput"
-            placeholder="Email..."
-            s={12}
-            label="Email *"
-            value={this.state.email}
-            maxLength="50"
-            onChange={e =>
-              this.setState({
-                email: e.target.value
-              })
-            }
-          />
-        </div>
-        <div className="editModalBtnBlock">
-          <div>
-            <Button
-              onClick={() => this.closeModal()}
-              className="red darken-3"
-              waves="light"
-            >
-              Cancel
-            </Button>
-            <Button
-              disabled={false}
-              className="green lighten-1"
-              waves="light"
-              onClick={() => this.confirmUserModalBtn()}
-            >
-              Confirm
-            </Button>
-          </div>
-        </div>
-
-      </Row>
-    )
-  }
-
   render() {
+    console.log(this)
     return (
-
       <div className="userPageBlock">
         <div className="headerBlock">
           <div className="nameBlock">User Manager</div>
@@ -479,7 +453,6 @@ export default class UserPage extends Component {
 
 
           <div className="tableBlock">
-
             <UserDataTable
               data={this.state.userData}
               openUserModal={
@@ -501,7 +474,11 @@ export default class UserPage extends Component {
           actions={""}
           header={this.state.headerType}
         >
-          {`User ID : ${this.state.editUserID}`}
+          <UserInputForModal
+            userInputProperty={this.state.userInputProperty}
+
+            closeModal={() => this.closeModal()}
+          />
         </Modal>
 
         {/* Delete Modal */}
@@ -539,63 +516,3 @@ export default class UserPage extends Component {
     );
   }
 }
-
-
-
-
-function UserDataTable({ data, openUserModal, deleteUserModal }) {
-  return (
-    <Table centered={true}>
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Email</th>
-          <th>Created Time</th>
-          <th>Updated Time</th>
-          <th>Edit&Delete</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map(({ id, first_name, last_name, email, created_time, updated_time }) => {
-          return (
-            <tr key={id}>
-              <td>{id}</td>
-              <td>{first_name}</td>
-              <td>{last_name}</td>
-              <td>{email}</td>
-              <td>{created_time}</td>
-              <td>{updated_time}</td>
-              <td className="tdEditDelete">
-                <div>
-                  <Button
-                    id="editBtn"
-                    // onClick={onClick}
-                    onClick={(e) => openUserModal(e, id)}
-                    className="yellow darken-2"
-                    waves="light"
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    id="deleteBtn"
-                    onClick={() =>
-                      deleteUserModal(id, first_name, last_name)
-                    }
-
-                    className="red darken-2"
-                    waves="light"
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </td>
-            </tr>
-          );
-        }) // eof return
-        }
-      </tbody>
-    </Table>
-  )
-};
