@@ -2,15 +2,13 @@ import React, { Component } from "react";
 import "./userPage.scss";
 import { Button, Table, Modal, Row, Input } from "react-materialize";
 
-import TableContent from './TableContent';
-
 const API_USERS_URL = "http://localhost:3000/api/users/";
 const API_LOGOUT_URL = "http://localhost:3000/auth/logout";
 
-function UserInputForModal({ userInputProperty, closeModal }) {
+function UserInputForModal({ userInputProperty, closeModal, confirmUserModalBtn, isAddUserMode }) {
   return (
-    <Row className="editUserInputBlock">
-      <div className="inputFieldWrapper">
+    <Row className='editUserInputBlock'>
+      <div className='inputFieldWrapper'>
         {
           Object.keys(userInputProperty).map(data => {
             let getInputProps = userInputProperty[data];
@@ -21,16 +19,19 @@ function UserInputForModal({ userInputProperty, closeModal }) {
                 className={getInputProps.className}
                 placeholder={getInputProps.placeholder}
                 s={getInputProps.s}
-                label={getInputProps.label}
+                label={`${isAddUserMode
+                  ? getInputProps.label + ' *'
+                  : getInputProps.label
+                  }`}
                 value={getInputProps.value}
                 maxLength={getInputProps.maxLength}
-                onChange={(e) => getInputProps.onChange(e, data)}
+                onChange={(e) => getInputProps.onChange(e)}
               />
             )
           })
         }
       </div>
-      <div className="editModalBtnBlock">
+      <div className='editModalBtnBlock'>
         <div>
           <Button
             onClick={() => closeModal()}
@@ -43,7 +44,7 @@ function UserInputForModal({ userInputProperty, closeModal }) {
             disabled={false}
             className="green lighten-1"
             waves="light"
-            onClick={() => this.confirmUserModalBtn()}
+            onClick={() => confirmUserModalBtn()}
           >
             Confirm
           </Button>
@@ -124,7 +125,58 @@ export default class UserPage extends Component {
       isAddUserMode: true,
       isConfirmBtnDisable: true,
       isRequired: false,
-      userInputProperty: []
+      userInputProperty: {
+        first_name: {
+          type: 'text',
+          className: 'first_name userFirstNameInput',
+          placeholder: 'First Name...',
+          s: 6,
+          label: 'First Name',
+          value: '',
+          maxLength: 50,
+          onChange: e => this.inputChange(e),
+        },
+        last_name: {
+          type: 'text',
+          className: 'last_name userLastNameInput',
+          placeholder: 'Last Name...',
+          s: 6,
+          label: 'Last Name',
+          value: '',
+          maxLength: 50,
+          onChange: e => this.inputChange(e),
+        },
+        password: {
+          type: 'password',
+          className: 'password userPasswordInput',
+          placeholder: 'Password...',
+          s: 6,
+          label: 'Password',
+          value: '',
+          maxLength: 50,
+          onChange: e => this.inputChange(e),
+        },
+        confirm_password: {
+          type: 'password',
+          className: 'confirm_password userPasswordInput',
+          placeholder: 'Confirm Password...',
+          s: 6,
+          label: 'Confirm Password',
+          value: '',
+          maxLength: 50,
+          onChange: e => this.inputChange(e),
+        },
+        email: {
+          type: 'email',
+          className: 'email userPasswordInput',
+          placeholder: 'Email...',
+          s: 12,
+          label: 'Email',
+          value: '',
+          maxLength: 50,
+          onChange: e => this.inputChange(e),
+        }
+      }
     };
   }
 
@@ -160,66 +212,48 @@ export default class UserPage extends Component {
       .then(res => {
         return res.json();
       })
+      // .then(data => {
+      //   let getUserData = data[0];
+      //   this.setState({
+      //     editUserID: userID, //can not be edited
+      //     first_name: getUserData.first_name,
+      //     last_name: getUserData.last_name,
+      //     email: getUserData.email,
+      //     password: getUserData.password,
+      //     prevPassword: getUserData.password
+      //   });
+      //   return data;
+      // })
       .then(data => {
-        let getUserData = data[0];
-        this.setState({
-          editUserID: userID, //can not be edited
-          first_name: getUserData.first_name,
-          last_name: getUserData.last_name,
-          email: getUserData.email,
-          password: getUserData.password,
-          prevPassword: getUserData.password
-        });
-        return data;
-      })
-      .then(data => {
-        this.setState({
-          userInputProperty: {
-            first_name: {
-              type: 'text',
-              className: 'first_name userFirstNameInput',
-              placeholder: 'First Name...',
-              s: 6,
-              label: 'First Name *',
-              value: this.state.first_name,
-              maxLength: 50,
-              onChange: e => this.inputChange(e, data)
-            },
-            last_name: {
-              type: 'text',
-              className: 'last_name userLastNameInput',
-              placeholder: 'Last Name...',
-              s: 6,
-              label: 'Last Name *',
-              value: this.state.last_name,
-              maxLength: 50,
-              onChange: e => this.inputChange(e, data)
-            }
-          }
+        this.setState(prevState => {
+          let newState = { ...prevState };
+          newState.prevPassword = data[0].password;
+          Object.keys(newState.userInputProperty)
+            .map(props => {
+              newState.userInputProperty[props].value = data[0][props]
+            })
+          return newState;
         })
       })
       .catch(err => alert("Failed to get users! Please try again."));
   }
 
-  inputChange(e, data) {
-    // console.log(222, data)
-    console.log(333, e.target.classList[0])
-    let getChangeInput = [e.target.classList[0]];
-    this.setState((prevState, props) => ({
-      getChangeInput: e.target.value,
-      userInputProperty: {
-        getChangeInput: {
-          value: this.state.getChangeInput
-        }
-      }
-    }))
+  inputChange(e) {
+    let label = e.target.classList[0];
+    let value = e.target.value;
+
+    this.setState(prevState => {
+      let newState = { ...prevState };
+      newState.userInputProperty[label].value = value;
+      return newState;
+    })
   }
 
 
   openUserModal(e, userID) {
     // check modal type isAddMode = 1, isEditMode = 0
-    let checkModalType = e.target.id === "addUserBtn" ? 1 : 0;
-    let headerType = checkModalType === 1 ? "Create A New User" : "Edit User"
+    let checkModalType = e.target.id === 'addUserBtn' ? 1 : 0;
+    let headerType = checkModalType === 1 ? 'Create A New User' : 'Edit User';
 
     if (checkModalType === 0) {
       this.getEditUser(userID)
@@ -233,36 +267,46 @@ export default class UserPage extends Component {
     }
 
     if (checkModalType === 1) {
-      this.setState({
-        first_name: "",
-        last_name: "",
-        password: "",
-        confirmPassword: "",
-        email: "",
-        isAddUserMode: true,
-        headerType: headerType
+      this.setState(prevState => {
+        let newState = { ...prevState }
+        newState.isAddUserMode = true
+        newState.headerType = headerType
+        Object.keys(newState.userInputProperty).map(props => {
+          newState.userInputProperty[props].value = "";
+          newState.headerType = headerType;
+        })
+        return newState;
       })
     }
     $("#userModal").modal("open");
   }
 
   confirmAddNewUser() {
-    const {
+    let [
       first_name,
       last_name,
       password,
       confirmPassword,
       email
-    } = this.state;
+    ] = Object.keys(this.state.userInputProperty).map(props => {
+      return this.state.userInputProperty[props].value
+    })
 
-    if (first_name === "" || last_name === "" ||
-      password === "" || confirmPassword === "" || email === "") {
-      alert("Input with * is required")
-      return
-    }
+    if (first_name === "") return alert("First Name is required.")
+    if (last_name === "") return alert("Last Name is required.")
+    if (password === "") return alert("Password is required.")
+    if (confirmPassword === "") return alert("Confirm Password is required.")
+    if (email === "") return alert("Email is required.")
+
+
 
     if (password === confirmPassword) {
-      let newUserData = this.state;
+      let newUserData = {
+        first_name: first_name,
+        last_name: last_name,
+        password: password,
+        email
+      }
       fetch(`${API_USERS_URL}`, {
         method: "POST",
         body: JSON.stringify(newUserData),
@@ -273,12 +317,11 @@ export default class UserPage extends Component {
         .then(this.closeModal())
         .then(window.location.reload())
         .catch(err => console.log(`We got errors: ${err}`));
-    } else {
+    }
+    else {
       alert("Please confirm your passwords!")
     }
   }
-
-
 
   confirmUserModalBtn() {
     if (this.state.isAddUserMode) {
@@ -289,14 +332,35 @@ export default class UserPage extends Component {
   }
 
   confirmEditUser() {
-    let {
+    let test1 = Object.keys(this.state.userInputProperty).map(props => {
+      return this.state.userInputProperty[props]
+    })
+
+    console.log(333, test1);
+
+    let [
       first_name,
       last_name,
       password,
-      confirmPassword,
-      email,
+      confirm_password,
+      email
+    ] = test1;
+
+    let { value } = confirm_password;
+    console.log(555, value)
+
+    let {
       prevPassword
-    } = this.state;
+    } = this.state
+
+    // let {
+    //   first_name,
+    //   last_name,
+    //   password,
+    //   confirmPassword,
+    //   email,
+    //   prevPassword
+    // } = this.state.userInputProperty;
 
     let withoutPassword = {
       first_name: first_name,
@@ -313,40 +377,48 @@ export default class UserPage extends Component {
       isPasswordEdit: true
     };
 
+
     if (first_name === "" || last_name === "" || email === "") {
       alert("Input with * is required")
       return
     }
 
-    if (confirmPassword !== "") {
+    if (first_name === "") return alert("First Name is required.")
+    if (last_name === "") return alert("Last Name is required.")
+    if (email === "") return alert("Email is required.")
+
+
+    if (confirm_password !== undefined) {
       if (password === prevPassword) {
-        return alert("Please confirm your passwords!")
+        return alert("1111 Please confirm your passwords!")
       }
     }
-
 
     let editUserData = prevPassword === password
       ? withoutPassword
       : withPassword;
 
+    console.log(222, editUserData)
+
     if (editUserData.isPasswordEdit) {
+      console.log(123123123)
       let { password, confirmPassword } = this.state;
       if (password !== confirmPassword) {
-        return alert("Please confirm your passwords!")
+        return alert("222 Please confirm your passwords!")
       }
     }
 
 
-    fetch(`${API_USERS_URL}${this.state.editUserID}`, {
-      method: "PUT",
-      body: JSON.stringify(editUserData),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    })
-      .then(this.closeModal())
-      .then(window.location.reload())
-      .catch(err => alert('Edit failed. Please try again.'));
+    // fetch(`${API_USERS_URL}${this.state.editUserID}`, {
+    //   method: "PUT",
+    //   body: JSON.stringify(editUserData),
+    //   headers: {
+    //     "Content-Type": "application/json"
+    //   }
+    // })
+    //   .then(this.closeModal())
+    //   .then(window.location.reload())
+    //   .catch(err => alert('Edit failed. Please try again.'));
   }
 
 
@@ -421,7 +493,6 @@ export default class UserPage extends Component {
   }
 
   render() {
-    console.log(this)
     return (
       <div className="userPageBlock">
         <div className="headerBlock">
@@ -476,8 +547,9 @@ export default class UserPage extends Component {
         >
           <UserInputForModal
             userInputProperty={this.state.userInputProperty}
-
+            confirmUserModalBtn={() => this.confirmUserModalBtn()}
             closeModal={() => this.closeModal()}
+            isAddUserMode={this.state.isAddUserMode}
           />
         </Modal>
 
