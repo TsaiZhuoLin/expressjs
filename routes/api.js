@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const crypto = require('crypto');
 
 /* GET users API listing. */
 router.get("/users", (req, res) => {
@@ -126,28 +125,17 @@ router.put("/users/:id", (req, res, next) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
-    sqlWithPW = `
+    sql = `
         UPDATE
           users
         SET
           first_name = '${first_name}',
           last_name = '${last_name}',
-          password = MD5('${password}'),
+          ${password === '' ? '' : `password = MD5(${password}),`}
           email ='${email}'
         WHERE
           id = ${req.params.id};
-      `,
-    sqlWithoutPW = `
-        UPDATE
-          users
-        SET
-          first_name = '${first_name}',
-          last_name = '${last_name}',
-          email ='${email}'
-        WHERE
-          id = ${req.params.id};
-      `,
-    sql = password === undefined ? sqlWithoutPW : sqlWithPW;
+    `;
 
   db.query(sql, err => {
     errHandler(err);
