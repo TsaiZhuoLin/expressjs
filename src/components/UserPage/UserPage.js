@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import './userPage.scss';
 import { Button, Table, Modal, Row, Input } from 'react-materialize';
 
-const API_USERS_URL = 'http://localhost:3000/api/users/';
-const API_LOGOUT_URL = 'http://localhost:3000/auth/logout';
+const API_USERS_URL = 'http://localhost:3050/api/users/';
+const API_LOGOUT_URL = 'http://localhost:3050/auth/logout';
 
 
 {/* <Welcome name="Sara" actionType="" />; */ }
@@ -12,22 +12,22 @@ function UserInputForModal(props) {
     <Row className='editUserInputBlock'>
       <div className='inputFieldWrapper'>
         {
-          Object.keys(props.userInputProperty).map(data => {
-            let getInputProps = props.userInputProperty[data];
+          props.userInputProperty.map((data) => {
             return (
               <Input
-                key={getInputProps.label}
-                type={getInputProps.type}
-                className={getInputProps.className}
-                placeholder={getInputProps.placeholder}
-                s={getInputProps.s}
+                key={data.label}
+                type={data.type}
+                className={data.className}
+                placeholder={data.placeholder}
+                s={6}
                 label={`${props.isAddUserMode
-                  ? getInputProps.label + ' *'
-                  : getInputProps.label
-                  }`}
-                value={getInputProps.value}
-                maxLength={getInputProps.maxLength}
-                onChange={(event) => getInputProps.onChange(event)}
+                  ? data.label + ' *'
+                  : data.label
+                  }`
+                }
+                value={props.userInputData[0][data.className] || ''}
+                maxLength={50}
+                onChange={(event) => props.onChange(event)}
               />
             )
           })
@@ -82,10 +82,9 @@ function UserDataTable(props) {
                 <div>
                   <Button
                     id='editBtn'
-                    onClick={() => getOpenUserModal('edit', props.id)}
+                    onClick={() => getOpenUserModal('edit', props.id, this)}
                     className='yellow darken-2'
                     waves='light'
-                    actionType="edit"
                   >
                     Edit
                   </Button>
@@ -115,67 +114,51 @@ export default class UserPage extends Component {
     super(props);
     this.state = {
       userData: [],
+      userInputData: [],
       loginUserName: '',
       headerType: '',
       isAddUserMode: true,
       isConfirmBtnDisable: true,
       userModalAction: false,
       deleteModalAction: false,
+      userInputData: {
+        fetchedData: [
+          {
+            first_name: '',
+          }
+        ]
+      },
       tableHeader: [
         'ID', 'First Name', 'Last Name', 'Email', 'Created Time', 'Updated Time', 'Edit&Delete'
       ],
-      userInputProperty: {
-        first_name: {
-          type: 'text',
-          className: 'first_name userFirstNameInput',
-          placeholder: 'First Name...',
-          s: 6,
-          label: 'First Name',
-          value: '',
-          maxLength: 50,
-          onChange: event => this.inputChange(event),
-        },
-        last_name: {
-          type: 'text',
-          className: 'last_name userLastNameInput',
-          placeholder: 'Last Name...',
-          s: 6,
-          label: 'Last Name',
-          value: '',
-          maxLength: 50,
-          onChange: event => this.inputChange(event),
-        },
-        password: {
-          type: 'password',
-          className: 'password userPasswordInput',
-          placeholder: 'Password...',
-          s: 6,
-          label: 'Password',
-          value: '',
-          maxLength: 50,
-          onChange: event => this.inputChange(event),
-        },
-        confirm_password: {
-          type: 'password',
-          className: 'confirm_password userPasswordInput',
-          placeholder: 'Confirm Password...',
-          s: 6,
-          label: 'Confirm Password',
-          value: '',
-          maxLength: 50,
-          onChange: event => this.inputChange(event),
-        },
-        email: {
-          type: 'email',
-          className: 'email userPasswordInput',
-          placeholder: 'Email...',
-          s: 12,
-          label: 'Email',
-          value: '',
-          maxLength: 50,
-          onChange: event => this.inputChange(event),
-        }
+      userInputProperty: [{
+        type: 'text',
+        className: 'first_name',
+        placeholder: 'First Name...',
+        label: 'First Name'
+      },
+      {
+        type: 'text',
+        className: 'last_name',
+        placeholder: 'Last Name...',
+        label: 'Last Name',
+      }, {
+        type: 'password',
+        className: 'password',
+        placeholder: 'Password...',
+        label: 'Password',
+      }, {
+        type: 'password',
+        className: 'confirm_password',
+        placeholder: 'Confirm Password...',
+        label: 'Confirm Password',
+      }, {
+        type: 'email',
+        className: 'email',
+        placeholder: 'Email...',
+        label: 'Email',
       }
+      ]
     };
   }
 
@@ -209,13 +192,13 @@ export default class UserPage extends Component {
       .then(res => {
         return res.json();
       })
-      .then(data => {
+      .then(fetchedData => {
         this.setState(prevState => {
           let newState = { ...prevState };
-          newState.prevPassword = data[0].password;
-          Object.keys(newState.userInputProperty).map(props => {
-            newState.userInputProperty[props].value = data[0][props]
-          })
+          newState.prevPassword = fetchedData[0].password;
+          newState.userInputData = {
+            fetchedData
+          }
           return newState;
         })
       })
@@ -227,7 +210,7 @@ export default class UserPage extends Component {
     let value = event.target.value;
     this.setState(prevState => {
       let newState = { ...prevState };
-      newState.userInputProperty[label].value = value;
+      newState.userInputData.fetchedData[0][label] = value;
       return newState;
     })
   }
@@ -270,9 +253,9 @@ export default class UserPage extends Component {
       password,
       confirmPassword,
       email
-    ] = Object.keys(this.state.userInputProperty).map(props => {
-      return this.state.userInputProperty[props].value
-    })
+    ] = this.state.userInputProperty.map(props => (
+      this.state.userInputData.fetchedData[0][props.className]
+    ))
 
     if (first_name === '') return alert('First Name is required.')
     if (last_name === '') return alert('Last Name is required.')
@@ -316,7 +299,7 @@ export default class UserPage extends Component {
   confirmEditUser() {
     let {
       prevPassword
-    } = this.state
+    } = this.state;
 
     let [
       first_name,
@@ -324,9 +307,9 @@ export default class UserPage extends Component {
       password,
       confirm_password,
       email
-    ] = Object.keys(this.state.userInputProperty).map(props => {
-      return this.state.userInputProperty[props].value
-    })
+    ] = this.state.userInputProperty.map(props => (
+      this.state.userInputData.fetchedData[0][props.className]
+    ))
 
     let alertMsg = 'Please check/confirm your password!';
 
@@ -412,9 +395,9 @@ export default class UserPage extends Component {
     this.setState(prevState => {
       let newState = { ...prevState }
       newState.userModalAction = false;
-      Object.keys(newState.userInputProperty).map(props => {
-        newState.userInputProperty[props].value = '';
-      })
+      newState.userInputProperty.map(props => (
+        newState.userInputData.fetchedData[0][props.className] = ''
+      ))
       return newState;
     })
   }
@@ -453,6 +436,7 @@ export default class UserPage extends Component {
             <UserDataTable
               tableHeader={this.state.tableHeader}
               userdata={this.state.userData}
+
               openUserModal={
                 (mode, userID) => this.openUserModal(mode, userID)
               }
@@ -460,6 +444,7 @@ export default class UserPage extends Component {
                 (userID, firstName, lastName) =>
                   this.getDeleteUser(userID, firstName, lastName)
               }
+
             />
           </div>
         </div>
@@ -475,11 +460,14 @@ export default class UserPage extends Component {
         >
           <UserInputForModal
             userInputProperty={this.state.userInputProperty}
+            userInputData={this.state.userInputData.fetchedData}
             confirmUserModalBtn={() => this.confirmUserModalBtn()}
             closeModal={() => this.closeModal()}
             isAddUserMode={this.state.isAddUserMode}
             actionType="edit"
+            onChange={(event) => this.inputChange(event)}
           />
+
         </Modal>
 
         {/* Delete Modal */}
