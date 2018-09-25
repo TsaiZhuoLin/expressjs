@@ -89,17 +89,27 @@
 
 
 .userModalBlock {
+  .modal-footer {
+    height: 0px;
+  }
   .modal-content {
+    
     h4{
       margin-bottom: 25px;
     }
   }
   .inputFieldWrapper{
-    margin-bottom: 50px;
+    width: 100%;
+    margin-bottom: 25px;
+    
   }
   .editUserInputBlock{
     @include flex;
     flex-direction: column;
+    button {
+      width: 200px;
+      height: 40px;
+    }
   }
   .editModalBtnBlock {
     @include flex(flex-end);

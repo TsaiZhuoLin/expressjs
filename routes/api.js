@@ -1,11 +1,6 @@
 const express = require("express");
 const router = express.Router();
 
-/* GET users listing. */
-// router.get("/", function(req, res) {
-//   res.send("default api route");
-// });
-
 /* GET users API listing. */
 router.get("/users", (req, res) => {
   // Here to check login
@@ -14,7 +9,7 @@ router.get("/users", (req, res) => {
   let db = req.con,
     getAllUsers = `
         SELECT
-          id, first_name, last_name, password, email,
+          id, first_name, last_name, email,
           date_format(created_time, '%Y-%m-%d %H:%i:%s') as created_time,
           date_format(updated_time, '%Y-%m-%d %H:%i:%s') as updated_time
           
@@ -39,6 +34,7 @@ router.post("/users", (req, res) => {
     last_name = jsonData.last_name,
     password = jsonData.password,
     email = jsonData.email,
+
     sql = `
         INSERT INTO users (
           first_name,
@@ -49,7 +45,7 @@ router.post("/users", (req, res) => {
         VALUES (
           '${first_name}',
           '${last_name}',
-          '${password}',
+          MD5('${password}'),
           '${email}'
         );
       `;
@@ -96,7 +92,7 @@ router.patch("/users/:id", (req, res) => {
   });
 });
 
-/* GET users API listing. */
+/* GET one user API listing. */
 router.get("/users/:id", (req, res) => {
   // Here to check login
   // userCheck(req, res, () => {
@@ -135,16 +131,17 @@ router.put("/users/:id", (req, res, next) => {
         SET
           first_name = '${first_name}',
           last_name = '${last_name}',
-          password = '${password}',
+          ${password === '' ? '' : `password = MD5(${password}),`}
           email ='${email}'
         WHERE
           id = ${req.params.id};
-      `;
+    `;
 
   db.query(sql, err => {
     errHandler(err);
     res.send("User data has been updated too");
   });
+
   // });
 });
 

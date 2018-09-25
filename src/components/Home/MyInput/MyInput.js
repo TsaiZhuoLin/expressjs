@@ -4,7 +4,7 @@ import "./MyInput.scss";
 import { Row, Input, Button } from "react-materialize";
 import { withRouter } from "react-router-dom";
 
-const loginURL = "http://localhost:3000/auth/login";
+const loginURL = "http://localhost:3050/auth/login";
 
 
 
