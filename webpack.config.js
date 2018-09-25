@@ -84,7 +84,26 @@ module.exports = {
     stats: "errors-only"
   },
   optimization: {
-    minimizer: [new OptimizeCssAssetsPlugin({}), new UglifyJsPlugin({})]
+    minimize: true,
+    minimizer: [
+      new OptimizeCssAssetsPlugin({
+        assetNameRegExp: /\.css$/g,
+        cssProcessor: require('cssnano'),
+        cssProcessorOptions: { discardComments: { removeAll: true } },
+        canPrint: true
+      }),
+      new UglifyJsPlugin({
+        uglifyOptions: {
+          output: {
+            comments: false,
+            beautify: false,
+          },
+          compress: true,
+          mangle: true,
+          warnings: false
+        }
+      })
+    ]
   },
   plugins: [
     new HtmlWebpackPlugin({

@@ -6,31 +6,32 @@ const API_USERS_URL = 'http://localhost:3050/api/users/';
 const API_LOGOUT_URL = 'http://localhost:3050/auth/logout';
 
 
-{/* <Welcome name="Sara" actionType="" />; */ }
 function UserInputForModal(props) {
   return (
     <Row className='editUserInputBlock'>
       <div className='inputFieldWrapper'>
         {
-          props.userInputProperty.map((data) => {
+          props.userInputProperty.map((item, index) => {
             return (
               <Input
-                key={data.label}
-                type={data.type}
-                className={data.className}
-                placeholder={data.placeholder}
+                key={item.label}
+                type={item.type}
+                className={item.className}
+                placeholder={item.placeholder}
                 s={6}
                 label={`${props.isAddUserMode
-                  ? data.label + ' *'
-                  : data.label
+                  ? item.label + ' *'
+                  : item.label
                   }`
                 }
-                value={props.userInputData[0][data.className] || ''}
+                value={Object.values(props.userInputData)[index + 1] || ''}
+                //value={""}
                 maxLength={50}
                 onChange={(event) => props.onChange(event)}
               />
-            )
-          })
+            )//eof return
+            // })
+          })//eof first map
         }
       </div>
       <div className='editModalBtnBlock'>
@@ -56,9 +57,44 @@ function UserInputForModal(props) {
   )
 }
 
+
+function DeleteUserContent(props) {
+  return (
+    <div className='deleteModalBtnBlock'>
+      <h3>Are you sure you want to delete this user data?</h3>
+      <ul>
+        <li>ID : {this.state.deleteUserID}</li>
+        <li>First Name : {this.state.deleteUserFirstName}</li>
+        <li>Last Name : {this.state.deleteUserLastName}</li>
+      </ul>
+      <div>
+        <Button
+          onClick={() => (
+            this.setState({ deleteModalAction: false })
+          )}
+          className='red lighten-3'
+          waves='light'
+        >
+          Cancel
+            </Button>
+        <Button
+          className='red darken-3'
+          waves='light'
+          onClick={() =>
+            this.confirmDeleteUser(this.state.deleteUserID)}
+        >
+          Delete
+            </Button>
+      </div>
+    </div>
+  )
+}
+
+
+
 function UserDataTable(props) {
-  let getOpenUserModal = props.openUserModal,
-    getdeleteUserModal = props.deleteUserModal;
+  let getOpenUserModal = props.openUserModal;
+
   return (
     <Table centered={true}>
       <thead>
@@ -70,6 +106,7 @@ function UserDataTable(props) {
       </thead>
       <tbody>
         {props.userdata.map((props) => {
+
           return (
             <tr key={props.id}>
               <td>{props.id}</td>
@@ -82,7 +119,7 @@ function UserDataTable(props) {
                 <div>
                   <Button
                     id='editBtn'
-                    onClick={() => getOpenUserModal('edit', props.id, this)}
+                    onClick={() => getOpenUserModal('edit', props.id)}
                     className='yellow darken-2'
                     waves='light'
                   >
@@ -90,9 +127,10 @@ function UserDataTable(props) {
                   </Button>
                   <Button
                     id='deleteBtn'
-                    onClick={() =>
-                      getdeleteUserModal(props.id, props.first_name, props.last_name)
-                    }
+                    // onClick={() =>
+                    //   getdeleteUserModal(props.id, props.first_name, props.last_name)
+                    // }
+                    onClick={() => getOpenUserModal('delete', props.id, props.first_name, props.last_name)}
                     className='red darken-2'
                     waves='light'
                   >
@@ -114,7 +152,6 @@ export default class UserPage extends Component {
     super(props);
     this.state = {
       userData: [],
-      userInputData: [],
       loginUserName: '',
       headerType: '',
       isAddUserMode: true,
@@ -122,39 +159,35 @@ export default class UserPage extends Component {
       userModalAction: false,
       deleteModalAction: false,
       userInputData: {
-        fetchedData: [
-          {
-            first_name: '',
-          }
-        ]
+
       },
       tableHeader: [
         'ID', 'First Name', 'Last Name', 'Email', 'Created Time', 'Updated Time', 'Edit&Delete'
       ],
       userInputProperty: [{
         type: 'text',
-        className: 'first_name',
+        inputIndex: 'first_name',
         placeholder: 'First Name...',
         label: 'First Name'
       },
       {
         type: 'text',
-        className: 'last_name',
+        inputIndex: 'last_name',
         placeholder: 'Last Name...',
         label: 'Last Name',
       }, {
         type: 'password',
-        className: 'password',
+        inputIndex: 'password',
         placeholder: 'Password...',
         label: 'Password',
       }, {
         type: 'password',
-        className: 'confirm_password',
+        inputIndex: 'confirm_password',
         placeholder: 'Confirm Password...',
         label: 'Confirm Password',
       }, {
         type: 'email',
-        className: 'email',
+        inputIndex: 'email',
         placeholder: 'Email...',
         label: 'Email',
       }
@@ -189,16 +222,18 @@ export default class UserPage extends Component {
 
   getEditUser(userID) {
     fetch(`${API_USERS_URL}${userID}`)
-      .then(res => {
-        return res.json();
-      })
+      .then(res => res.json())
       .then(fetchedData => {
+        let userData = fetchedData[0];
+        console.log(222, userData);
         this.setState(prevState => {
           let newState = { ...prevState };
-          newState.prevPassword = fetchedData[0].password;
-          newState.userInputData = {
-            fetchedData
-          }
+          newState.prevPassword = userData.password;
+          newState.userInputData = userData;
+          // newState.userInputProperty.map((props, index) => (
+          //   props.value =
+          // ))
+
           return newState;
         })
       })
@@ -216,33 +251,33 @@ export default class UserPage extends Component {
   }
 
 
-  openUserModal(mode, userID) {
-    let headerType = mode === 'add' ? 'Create A New User' : 'Edit User';
+  openUserModal(mode, userID, userFirstName, userLastName) {
+
+    this.setState({
+      userModalMode: mode,
+      userModalAction: true,
+      headerTitle: 'Create A New User',
+    })
 
     if (mode === 'edit') {
       this.getEditUser(userID)
       this.setState({
         editUserID: userID,
-        password: '',
-        confirmPassword: '',
+        headerTitle: 'Edit User',
         isAddUserMode: false,
-        userModalAction: true,
-        headerType: headerType
       })
+      return;
     }
 
-    if (mode === 'add') {
-      this.setState(prevState => {
-        let newState = { ...prevState }
-        newState.isAddUserMode = true
-        newState.userModalAction = true
-        newState.headerType = headerType
-        Object.keys(newState.userInputProperty).map(props => {
-          newState.userInputProperty[props].value = '';
-          newState.headerType = headerType;
-        })
-        return newState;
+    if (mode === 'delete') {
+      this.setState({
+        deleteUserID: userID,
+        deleteUserFirstName: userFirstName,
+        deleteUserLastName: userLastName,
+        headerTitle: 'Delete User',
+        isAddUserMode: true,
       })
+      return;
     }
   }
 
@@ -396,13 +431,17 @@ export default class UserPage extends Component {
       let newState = { ...prevState }
       newState.userModalAction = false;
       newState.userInputProperty.map(props => (
-        newState.userInputData.fetchedData[0][props.className] = ''
+        newState.userInputData.fetchedData = ''
       ))
       return newState;
     })
   }
 
   render() {
+
+    // let testary = this.state.userInputData.map(i => i)
+    console.log(111, this.state.userInputData)
+
     return (
       <div className='userPageBlock'>
         <div className='headerBlock'>
@@ -431,20 +470,13 @@ export default class UserPage extends Component {
             </Button>
           </div>
 
-
           <div className='tableBlock'>
             <UserDataTable
               tableHeader={this.state.tableHeader}
               userdata={this.state.userData}
-
               openUserModal={
-                (mode, userID) => this.openUserModal(mode, userID)
+                (mode, userID, userFirstName, userLastName) => this.openUserModal(mode, userID, userFirstName, userLastName)
               }
-              deleteUserModal={
-                (userID, firstName, lastName) =>
-                  this.getDeleteUser(userID, firstName, lastName)
-              }
-
             />
           </div>
         </div>
@@ -454,13 +486,13 @@ export default class UserPage extends Component {
           id='userModal'
           className='userModalBlock'
           actions={''}
-          header={this.state.headerType}
+          header={this.state.headerTitle}
           open={this.state.userModalAction}
           modalOptions={{ dismissible: false }}
         >
           <UserInputForModal
             userInputProperty={this.state.userInputProperty}
-            userInputData={this.state.userInputData.fetchedData}
+            userInputData={this.state.userInputData}
             confirmUserModalBtn={() => this.confirmUserModalBtn()}
             closeModal={() => this.closeModal()}
             isAddUserMode={this.state.isAddUserMode}
